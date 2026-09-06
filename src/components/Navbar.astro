@@ -8,10 +8,15 @@
 <header class="navbar bg-base-100/90 backdrop-blur shadow-sm px-4 sm:px-6 sticky top-0 z-40">
   <div class="navbar-start">
     <a href="/" class="btn btn-ghost px-2" aria-label="Home">
-      <img src="/logo-dark.svg" alt="Charlie Wang's Blog logo" width="160" height="40" class="h-10 w-auto dark:hidden" fetchpriority="high" />
-      <img src="/logo.svg" alt="" aria-hidden="true" width="160" height="40" class="h-10 w-auto hidden dark:block" fetchpriority="high" />
+      <img src="/logo-on-light.png" alt="Charlie-Cloud logo" width="184" height="40" class="logo-for-light h-8 sm:h-10 w-auto rounded-md" fetchpriority="high" />
+      <img src="/logo-on-dark.png" alt="" aria-hidden="true" width="184" height="40" class="logo-for-dark h-8 sm:h-10 w-auto rounded-md" fetchpriority="high" />
     </a>
   </div>
+  <style>
+    /* 跟随站内 data-theme 切换(而不是系统的 prefers-color-scheme) */
+    html[data-theme='dark'] .logo-for-light { display: none; }
+    html:not([data-theme='dark']) .logo-for-dark { display: none; }
+  </style>
 
   <nav class="navbar-center hidden lg:flex" aria-label="Primary">
     <ul class="menu menu-horizontal px-1 font-medium">
@@ -30,7 +35,7 @@
 
     <!-- 搜索:有 JS 时下拉建议,无 JS 时提交到 /search/?q= (渐进增强,SEO 友好) -->
     <form action="/search/" method="get" role="search" class="relative" id="site-search">
-      <label class="input input-bordered input-sm flex items-center gap-2 w-40 sm:w-56">
+      <label class="input input-bordered input-sm flex items-center gap-2 w-32 sm:w-56">
         <svg class="h-4 w-4 opacity-60" viewBox="0 0 24 24" stroke="currentColor" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21L16.65 16.65"/></svg>
         <input type="search" name="q" id="search-input" placeholder="Search posts…" autocomplete="off" aria-label="Search posts" class="grow" />
       </label>

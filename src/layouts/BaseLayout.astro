@@ -24,7 +24,7 @@ const {
   description,
   canonicalPath = Astro.url.pathname,
   ogType = 'website',
-  ogImage = '/favicon.svg',
+  ogImage = '/og-default.png',
   publishedTime,
   modifiedTime,
   author,
@@ -65,8 +65,8 @@ const jsonLd = [websiteLd, ...extras];
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1d232a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)" />
 
     <!-- Open Graph / Twitter -->
     <meta property="og:site_name" content={name} />
@@ -85,7 +85,10 @@ const jsonLd = [websiteLd, ...extras];
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageAbs} />
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <link rel="alternate" type="application/rss+xml" title={name} href="/rss.xml" />
     <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
 

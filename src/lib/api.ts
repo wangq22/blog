@@ -115,7 +115,7 @@ export async function fetchUserProfile(): Promise<UserProfile> {
     return {
       name: "Charlie Wang's Blog",
       bio: '',
-      avatar_url: '/favicon.svg',
+      avatar_url: '/icon-512.png',
     };
   }
 }

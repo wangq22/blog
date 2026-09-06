@@ -24,7 +24,7 @@ if (!post) return Astro.redirect('/404/');
 const html = renderMarkdown(post.content || '');
 const description = toDescription(post.excerpt, post.content);
 const canonicalPath = postUrl(post);
-const ogImage = post.cover_image || '/favicon.svg';
+const ogImage = post.cover_image || '/og-default.png';
 const name = siteName();
 
 const coverAbs = post.cover_image
