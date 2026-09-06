@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AuthGuard from '../../components/admin/AuthGuard';
+import PostEditApp from '../../components/admin/PostEditApp';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Edit Post" description="Create or edit a blog post." canonicalPath="/admin/edit/" noindex={true}>
+  <div class="px-4 sm:px-8 py-8 max-w-6xl mx-auto">
+    <nav class="breadcrumbs text-sm mb-4" aria-label="Breadcrumb">
+      <ol class="flex gap-2">
+        <li><a href="/" class="link link-hover">Home</a></li>
+        <li><a href="/admin/" class="link link-hover">Admin</a></li>
+        <li><a href="/admin/posts/" class="link link-hover">Posts</a></li>
+        <li aria-current="page">Edit</li>
+      </ol>
+    </nav>
+    <AuthGuard client:only="react">
+      <PostEditApp client:only="react" />
+    </AuthGuard>
+  </div>
+</BaseLayout>

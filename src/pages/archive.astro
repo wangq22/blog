@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sidebar from '../components/Sidebar.astro';
+import ArchiveTimeline from '../components/ArchiveTimeline.astro';
+import { fetchUserProfile, fetchCategories, fetchTags, fetchArchive } from '../lib/api';
+
+export const prerender = true;
+
+const [user, categories, tags, posts] = await Promise.all([
+  fetchUserProfile(),
+  fetchCategories(),
+  fetchTags(),
+  fetchArchive().catch(() => []),
+]);
+const sorted = [...posts].sort((a, b) => +new Date(b.date) - +new Date(a.date));
+---
+
+<BaseLayout
+  title="Archive"
+  description={`Browse all ${sorted.length} articles by ${user.name}, grouped by year. Filter by category or tag.`}
+  canonicalPath="/archive/"
+  extraJsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Article Archive',
+  }}
+>
+  <div class="px-2 sm:px-6 md:px-12 lg:px-16 xl:px-20 py-6 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <Sidebar user={user} categories={categories} tags={tags} />
+    <div class="lg:col-span-3 min-w-0 overflow-hidden">
+      <section class="card bg-base-100 shadow" aria-label="Article archive">
+        <div class="card-body">
+          <h1 class="card-title text-2xl mb-1">Article Archive</h1>
+          <p class="text-sm opacity-60 mb-4">{sorted.length} articles · grouped by year</p>
+          <ArchiveTimeline posts={sorted} />
+        </div>
+      </section>
+    </div>
+  </div>
+</BaseLayout>

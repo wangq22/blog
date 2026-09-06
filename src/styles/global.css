@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@plugin "daisyui" {
+  themes: cupcake, dark;
+  root: ":root";
+}
+
+/* 全局小幅优化:阅读体验 + 可访问性 */
+:root {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* markdown 正文(服务端渲染后的 HTML) */
+.markdown-body {
+  background: transparent !important;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+.markdown-body pre {
+  border-radius: 0.75rem;
+  overflow-x: auto;
+}
+.markdown-body img {
+  border-radius: 0.75rem;
+  max-width: 100%;
+  height: auto;
+}
+/* 代码高亮基础(配合 highlight.js github 主题,深色模式微调) */
+[data-theme="dark"] .markdown-body pre {
+  background: #0d1117 !important;
+}
+
+/* 跳过导航(无障碍,仅键盘可见) */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+}
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+}

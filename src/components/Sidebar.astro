@@ -1,0 +1,19 @@
+---
+import ProfileCard from './ProfileCard.astro';
+import CategoryCard from './CategoryCard.astro';
+import TagsCard from './TagsCard.astro';
+import type { UserProfile, Category, Tag } from '../lib/api';
+
+export interface Props {
+  user: UserProfile;
+  categories: Category[];
+  tags: Tag[];
+}
+const { user, categories, tags } = Astro.props;
+---
+
+<div class="lg:col-span-1 space-y-6 min-w-0">
+  <ProfileCard user={user} />
+  <CategoryCard categories={categories} />
+  <TagsCard tags={tags} />
+</div>

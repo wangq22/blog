@@ -1,0 +1,57 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+export const prerender = true;
+const q = Astro.url.searchParams.get('q')?.trim() || '';
+---
+
+<BaseLayout
+  title={q ? `Search: ${q}` : 'Search'}
+  description={q ? `Search results for "${q}".` : 'Search articles by title or content.'}
+  canonicalPath={q ? `/search/?q=${encodeURIComponent(q)}` : '/search/'}
+  noindex={!q}
+>
+  <div class="px-4 sm:px-8 py-8 max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold mb-4">Search</h1>
+    <form action="/search/" method="get" role="search" class="flex gap-2 mb-6">
+      <label class="input input-bordered flex items-center gap-2 flex-1">
+        <svg class="h-4 w-4 opacity-60" viewBox="0 0 24 24" stroke="currentColor" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21L16.65 16.65"/></svg>
+        <input type="search" name="q" value={q} placeholder="Type keywords…" aria-label="Search posts" class="grow" />
+      </label>
+      <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+    {q ? (
+      <>
+        <p class="text-sm opacity-60 mb-4">Results for “{q}”:</p>
+        <div id="search-results" class="space-y-4" data-query={q}>
+          <p class="opacity-60">Loading…</p>
+        </div>
+      </>
+    ) : (
+      <p class="opacity-60">Type a keyword above to search article titles and content.</p>
+    )}
+  </div>
+</BaseLayout>
+
+<script is:inline define:vars={{ apiBase: import.meta.env.PUBLIC_API_BASE }}>
+  (function () {
+    const box = document.getElementById('search-results');
+    if (!box) return;
+    const q = box.getAttribute('data-query') || '';
+    const API = String(apiBase || 'https://blog-api.charlie-cloud.me/api').replace(/\/$/, '');
+    fetch(`${API}/search/${encodeURIComponent(q)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!Array.isArray(data) || !data.length) {
+          box.innerHTML = '<p class="opacity-60">No results found.</p>';
+          return;
+        }
+        box.innerHTML = data.map((p) => {
+          const id = encodeURIComponent(String(p._id ?? ''));
+          const esc = (s) => String(s || '').replace(/</g, '&lt;');
+          return `<article class="card bg-base-100 shadow p-5"><h2 class="text-lg font-semibold"><a class="hover:text-primary" href="/post/${id}/">${esc(p.title)}</a></h2><p class="text-sm opacity-70 mt-1">${esc(p.excerpt)}</p><p class="text-xs opacity-50 mt-2">${esc(p.date || '')}</p></article>`;
+        }).join('');
+      })
+      .catch(() => { box.innerHTML = '<p class="text-error">Search failed, please retry.</p>'; });
+  })();
+</script>

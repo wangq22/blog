@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import PostCard from '../../components/PostCard.astro';
+import { fetchUserProfile, fetchCategories, fetchTags, fetchAllPosts, siteName } from '../../lib/api';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const PAGE_SIZE = 10;
+  const all = await fetchAllPosts(PAGE_SIZE).catch(() => []);
+  const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
+  return Array.from({ length: totalPages - 1 }, (_, i) => ({
+    params: { page: String(i + 2) },
+  }));
+}
+
+const PAGE_SIZE = 10;
+const page = Number(Astro.params.page || '1');
+const [user, categories, tags, all] = await Promise.all([
+  fetchUserProfile(),
+  fetchCategories(),
+  fetchTags(),
+  fetchAllPosts(PAGE_SIZE),
+]);
+const sorted = [...all].sort((a, b) => +new Date(b.date) - +new Date(a.date));
+const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+
+if (!Number.isInteger(page) || page < 2 || page > totalPages) {
+  return Astro.redirect(page === 1 ? '/' : '/404/');
+}
+
+const posts = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+const name = siteName();
+const title = `Page ${page}`;
+const description = `Articles page ${page} of ${totalPages} — ${user.name}.`;
+const prevHref = page === 2 ? '/' : `/page/${page - 1}/`;
+const nextHref = page < totalPages ? `/page/${page + 1}/` : null;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalPath={`/page/${page}/`}
+  noindex={true}
+>
+  <div class="px-2 sm:px-6 md:px-12 lg:px-16 xl:px-20 py-6 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <Sidebar user={user} categories={categories} tags={tags} />
+    <div class="lg:col-span-3 min-w-0 overflow-hidden">
+      <section class="card bg-base-100 shadow" aria-label={`Articles page ${page}`}>
+        <div class="card-body">
+          <h1 class="card-title text-2xl mb-4">All Articles — Page {page}</h1>
+          <div class="space-y-4">
+            {posts.map((post) => <PostCard post={post} />)}
+          </div>
+          <nav class="join mt-6" aria-label="Pagination">
+            <a class="join-item btn btn-sm" href={prevHref} rel="prev">← Prev</a>
+            <span class="join-item btn btn-sm btn-disabled">Page {page} of {totalPages}</span>
+            {nextHref ? (
+              <a class="join-item btn btn-sm" href={nextHref} rel="next">Next →</a>
+            ) : (
+              <span class="join-item btn btn-sm btn-disabled">Next →</span>
+            )}
+          </nav>
+        </div>
+      </section>
+    </div>
+  </div>
+</BaseLayout>

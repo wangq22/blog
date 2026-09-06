@@ -1,0 +1,68 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sidebar from '../components/Sidebar.astro';
+import { fetchUserProfile, fetchCategories, fetchTags } from '../lib/api';
+
+export const prerender = true;
+
+const [user, categories, tags] = await Promise.all([
+  fetchUserProfile(),
+  fetchCategories(),
+  fetchTags(),
+]);
+---
+
+<BaseLayout
+  title="About Me"
+  description={`About ${user.name}${user.bio ? ` — ${user.bio}` : ''}.`}
+  canonicalPath="/about/"
+  extraJsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    mainEntity: {
+      '@type': 'Person',
+      name: user.name,
+      description: user.bio,
+      image: user.avatar_url,
+      sameAs: [user.github_url, user.bilibili_url].filter(Boolean),
+    },
+  }}
+>
+  <div class="px-2 sm:px-6 md:px-12 lg:px-16 xl:px-20 py-6 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <Sidebar user={user} categories={categories} tags={tags} />
+    <div class="lg:col-span-3 min-w-0 overflow-hidden">
+      <section class="card bg-base-100 shadow" aria-label="About me">
+        <div class="card-body">
+          <h1 class="card-title text-2xl mb-4">About Me</h1>
+          <div class="flex flex-col sm:flex-row gap-6 items-start">
+            <img
+              src={user.avatar_url || '/favicon.svg'}
+              alt={`${user.name} avatar`}
+              width="160"
+              height="160"
+              loading="lazy"
+              decoding="async"
+              class="rounded-xl w-40 h-40 object-cover"
+            />
+            <div class="space-y-3">
+              <h2 class="text-xl font-semibold">{user.name}</h2>
+              {user.bio ? (
+                <p class="leading-relaxed opacity-90">{user.bio}</p>
+              ) : (
+                <p class="opacity-60">Nothing here yet — check back soon.</p>
+              )}
+              <div class="flex gap-2">
+                {user.github_url && (
+                  <a href={user.github_url} target="_blank" rel="noopener noreferrer me" class="btn btn-sm btn-soft">GitHub</a>
+                )}
+                {user.bilibili_url && (
+                  <a href={user.bilibili_url} target="_blank" rel="noopener noreferrer me" class="btn btn-sm btn-soft btn-info">Bilibili</a>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</BaseLayout>

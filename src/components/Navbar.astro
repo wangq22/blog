@@ -1,0 +1,114 @@
+---
+/**
+ * 顶栏:纯 Astro + 少量 vanilla JS(搜索建议)。
+ * SEO:使用语义化 header/nav + 文字链接(爬虫可跟随),logo 带 alt。
+ */
+---
+
+<header class="navbar bg-base-100/90 backdrop-blur shadow-sm px-4 sm:px-6 sticky top-0 z-40">
+  <div class="navbar-start">
+    <a href="/" class="btn btn-ghost px-2" aria-label="Home">
+      <img src="/logo-dark.svg" alt="Charlie Wang's Blog logo" width="160" height="40" class="h-10 w-auto dark:hidden" fetchpriority="high" />
+      <img src="/logo.svg" alt="" aria-hidden="true" width="160" height="40" class="h-10 w-auto hidden dark:block" fetchpriority="high" />
+    </a>
+  </div>
+
+  <nav class="navbar-center hidden lg:flex" aria-label="Primary">
+    <ul class="menu menu-horizontal px-1 font-medium">
+      <li><a href="/">Home</a></li>
+      <li><a href="/archive/">Archive</a></li>
+      <li><a href="/about/">About Me</a></li>
+    </ul>
+  </nav>
+
+  <div class="navbar-end gap-2">
+    <!-- 主题切换(无框架,localStorage 持久化) -->
+    <button id="theme-toggle" class="btn btn-ghost btn-circle" aria-label="Toggle theme" title="Toggle theme">
+      <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+
+    <!-- 搜索:有 JS 时下拉建议,无 JS 时提交到 /search/?q= (渐进增强,SEO 友好) -->
+    <form action="/search/" method="get" role="search" class="relative" id="site-search">
+      <label class="input input-bordered input-sm flex items-center gap-2 w-40 sm:w-56">
+        <svg class="h-4 w-4 opacity-60" viewBox="0 0 24 24" stroke="currentColor" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21L16.65 16.65"/></svg>
+        <input type="search" name="q" id="search-input" placeholder="Search posts…" autocomplete="off" aria-label="Search posts" class="grow" />
+      </label>
+      <ul id="search-suggest" class="absolute top-full right-0 mt-1 w-72 bg-base-100 shadow-lg rounded-box p-2 z-50 hidden" role="listbox" aria-label="Search suggestions"></ul>
+    </form>
+
+    <!-- 移动端菜单 -->
+    <div class="dropdown dropdown-end lg:hidden">
+      <button tabindex="0" class="btn btn-ghost btn-circle" aria-label="Open menu">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-50 w-44 p-2 shadow">
+        <li><a href="/">Home</a></li>
+        <li><a href="/archive/">Archive</a></li>
+        <li><a href="/about/">About Me</a></li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<script is:inline>
+  // 主题切换
+  (function () {
+    const btn = document.getElementById('theme-toggle');
+    const sun = document.getElementById('icon-sun');
+    const moon = document.getElementById('icon-moon');
+    function paint() {
+      const t = document.documentElement.getAttribute('data-theme') || 'cupcake';
+      const dark = t === 'dark';
+      if (sun) sun.classList.toggle('hidden', !dark);
+      if (moon) moon.classList.toggle('hidden', dark);
+    }
+    paint();
+    btn && btn.addEventListener('click', () => {
+      const cur = document.documentElement.getAttribute('data-theme');
+      const next = cur === 'dark' ? 'cupcake' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch {}
+      paint();
+    });
+  })();
+
+  // 搜索建议(防抖 250ms,复用旧站 /search/:keyword 接口)
+  (function () {
+    const input = document.getElementById('search-input');
+    const box = document.getElementById('search-suggest');
+    const API = (window.__PUBLIC_API_BASE || 'https://blog-api.charlie-cloud.me/api').replace(/\/$/, '');
+    let timer;
+    function hide() { box && box.classList.add('hidden'); }
+    function show() { box && box.classList.remove('hidden'); }
+    async function run(q) {
+      if (!q.trim()) { box.innerHTML = ''; hide(); return; }
+      try {
+        const res = await fetch(`${API}/search/${encodeURIComponent(q.trim())}`);
+        const data = await res.json();
+        if (!Array.isArray(data) || !data.length) { box.innerHTML = ''; hide(); return; }
+        box.innerHTML = data.slice(0, 6).map((p) => {
+          const id = encodeURIComponent(String(p._id ?? ''));
+          const title = String(p.title || '').replace(/</g, '&lt;');
+          const excerpt = String(p.excerpt || '').replace(/</g, '&lt;');
+          return `<li><a href="/post/${id}/" class="block p-2 hover:bg-base-200 rounded"><span class="block font-medium text-sm truncate">${title}</span><span class="block text-xs opacity-60 truncate">${excerpt}</span></a></li>`;
+        }).join('');
+        show();
+      } catch { hide(); }
+    }
+    if (input) {
+      input.addEventListener('input', () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => run(input.value), 250);
+      });
+      input.addEventListener('focus', () => { if (box.innerHTML) show(); });
+      input.addEventListener('blur', () => setTimeout(hide, 150));
+    }
+    document.addEventListener('click', (e) => {
+      if (box && !box.contains(e.target) && e.target !== input) hide();
+    });
+  })();
+</script>
+<script is:inline define:vars={{ apiBase: import.meta.env.PUBLIC_API_BASE }}>
+  window.__PUBLIC_API_BASE = apiBase;
+</script>

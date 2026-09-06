@@ -1,0 +1,139 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { fetchPostById, fetchAllPosts, absoluteUrl, siteName, formatDate, postUrl } from '../../lib/api';
+import { renderMarkdown, toDescription } from '../../lib/markdown';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const all = await fetchAllPosts(50).catch(() => []);
+  // 去重 id
+  const ids = [...new Set(all.map((p) => String(p._id)).filter(Boolean))];
+  return ids.map((id) => ({ params: { id } }));
+}
+
+const { id } = Astro.params;
+let post: Awaited<ReturnType<typeof fetchPostById>> | null = null;
+try {
+  post = await fetchPostById(id!);
+} catch {
+  return Astro.redirect('/404/');
+}
+if (!post) return Astro.redirect('/404/');
+
+const html = renderMarkdown(post.content || '');
+const description = toDescription(post.excerpt, post.content);
+const canonicalPath = postUrl(post);
+const ogImage = post.cover_image || '/favicon.svg';
+const name = siteName();
+
+const coverAbs = post.cover_image
+  ? post.cover_image.startsWith('http')
+    ? post.cover_image
+    : absoluteUrl(post.cover_image)
+  : undefined;
+
+const blogPostingLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.title,
+  description,
+  image: coverAbs ? [coverAbs] : undefined,
+  datePublished: post.date,
+  author: { '@type': 'Person', name: post.author || name },
+  mainEntityOfPage: absoluteUrl(canonicalPath),
+  wordCount: post.word_count,
+  timeRequired: post.read_time ? `PT${post.read_time}M` : undefined,
+  articleSection: post.category,
+  keywords: (post.tags || []).join(', '),
+};
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: absoluteUrl('/') },
+    { '@type': 'ListItem', position: 2, name: 'Archive', item: absoluteUrl('/archive/') },
+    { '@type': 'ListItem', position: 3, name: post.title, item: absoluteUrl(canonicalPath) },
+  ],
+};
+---
+
+<BaseLayout
+  title={post.title}
+  description={description}
+  canonicalPath={canonicalPath}
+  ogType="article"
+  ogImage={ogImage}
+  publishedTime={post.date}
+  author={post.author}
+  tags={post.tags}
+  extraJsonLd={[blogPostingLd, breadcrumbLd]}
+>
+  <div class="px-2 sm:px-6 md:px-12 py-8 max-w-4xl mx-auto">
+    <nav class="breadcrumbs text-sm mb-4" aria-label="Breadcrumb">
+      <ol class="flex gap-2">
+        <li><a href="/" class="link link-hover">Home</a></li>
+        <li><a href="/archive/" class="link link-hover">Archive</a></li>
+        <li aria-current="page" class="opacity-70 truncate max-w-[40vw]">{post.title}</li>
+      </ol>
+    </nav>
+
+    <article itemscope itemtype="https://schema.org/BlogPosting">
+      <header>
+        <h1 class="text-3xl sm:text-4xl font-bold leading-tight" itemprop="headline">{post.title}</h1>
+        <div class="text-sm opacity-70 mt-3 flex flex-wrap gap-x-4 gap-y-1 items-center">
+          <span class="inline-flex items-center gap-1">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <time datetime={post.date} itemprop="datePublished">{formatDate(post.date)}</time>
+          </span>
+          <span class="inline-flex items-center gap-1">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            {post.read_time} min read · {post.word_count} words
+          </span>
+          {post.author && <span itemprop="author">By {post.author}</span>}
+          {post.category && (
+            <a href={`/archive/category/${encodeURIComponent(post.category)}/`} class="badge badge-soft badge-primary">{post.category}</a>
+          )}
+        </div>
+        {post.tags?.length > 0 && (
+          <div class="flex flex-wrap gap-2 mt-3">
+            {post.tags.map((t) => (
+              <a href={`/archive/tag/${encodeURIComponent(t)}/`} class="badge badge-soft badge-secondary" rel="tag">{t}</a>
+            ))}
+          </div>
+        )}
+        {post.cover_image && (
+          <figure class="mt-6">
+            <img
+              src={post.cover_image}
+              alt={`${post.title} cover`}
+              width="1200"
+              height="630"
+              fetchpriority="high"
+              decoding="async"
+              class="rounded-xl w-full object-cover"
+              onerror="this.closest('figure').style.display='none'"
+            />
+          </figure>
+        )}
+      </header>
+
+      {post.excerpt && (
+        <p class="mt-6 p-4 bg-base-200 rounded-xl text-[0.95rem] leading-relaxed border-l-4 border-primary" itemprop="description">
+          {post.excerpt}
+        </p>
+      )}
+
+      <section class="markdown-body mt-6" itemprop="articleBody" set:html={html} />
+
+      <footer class="mt-10 pt-6 border-t border-base-300 flex flex-wrap gap-2 justify-between items-center">
+        <a href="/archive/" class="btn btn-sm btn-ghost">← Back to Archive</a>
+        <a href="/" class="btn btn-sm btn-ghost">All Articles</a>
+      </footer>
+    </article>
+  </div>
+
+  <!-- 代码高亮样式(github,轻量 CDN;构建 HTML 已含 hljs class) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css" /></noscript>
+</BaseLayout>

@@ -1,0 +1,117 @@
+---
+import '../styles/global.css';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import { siteUrl, siteName } from '../lib/api';
+
+export interface Props {
+  title: string;
+  description: string;
+  canonicalPath?: string;
+  ogType?: 'website' | 'article';
+  ogImage?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  author?: string;
+  tags?: string[];
+  noindex?: boolean;
+  /** 额外的 JSON-LD(对象或数组),会与默认 WebSite 合并输出 */
+  extraJsonLd?: Record<string, any> | Record<string, any>[];
+}
+
+const {
+  title,
+  description,
+  canonicalPath = Astro.url.pathname,
+  ogType = 'website',
+  ogImage = '/favicon.svg',
+  publishedTime,
+  modifiedTime,
+  author,
+  tags = [],
+  noindex = false,
+  extraJsonLd,
+} = Astro.props;
+
+const site = siteUrl();
+const name = siteName();
+const canonical = `${site}${canonicalPath}`;
+const fullTitle = title === name ? title : `${title} | ${name}`;
+const ogImageAbs = ogImage.startsWith('http') ? ogImage : `${site}${ogImage.startsWith('/') ? ogImage : `/${ogImage}`}`;
+
+const websiteLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name,
+  url: `${site}/`,
+  inLanguage: 'en',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: `${site}/search/?q={search_term_string}`,
+    'query-input': 'required name=search_term_string',
+  },
+};
+
+const extras = extraJsonLd ? (Array.isArray(extraJsonLd) ? extraJsonLd : [extraJsonLd]) : [];
+const jsonLd = [websiteLd, ...extras];
+---
+
+<!doctype html>
+<html lang="en" data-theme="cupcake">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1d232a" media="(prefers-color-scheme: dark)" />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:site_name" content={name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:image" content={ogImageAbs} />
+    <meta property="og:locale" content="en_US" />
+    {ogType === 'article' && publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {ogType === 'article' && modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+    {ogType === 'article' && author && <meta property="article:author" content={author} />}
+    {ogType === 'article' && tags.map((t) => <meta property="article:tag" content={t} />)}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageAbs} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title={name} href="/rss.xml" />
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+
+    <!-- 主题初始化(内联,防闪烁;localStorage > 系统偏好,默认 cupcake) -->
+    <script is:inline>
+      try {
+        const saved = localStorage.getItem('theme');
+        const theme =
+          saved === 'dark' || saved === 'cupcake'
+            ? saved
+            : window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'cupcake';
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch {}
+    </script>
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <slot name="head" />
+  </head>
+  <body class="min-h-screen bg-base-100 text-base-content antialiased">
+    <a href="#main" class="skip-link btn btn-sm btn-primary">Skip to content</a>
+    <Navbar />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

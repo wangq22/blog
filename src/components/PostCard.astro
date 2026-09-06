@@ -1,0 +1,65 @@
+---
+import type { PostPreview } from '../lib/api';
+import { postUrl, formatDate } from '../lib/api';
+
+export interface Props {
+  post: PostPreview;
+  headingLevel?: 'h2' | 'h3';
+}
+const { post, headingLevel = 'h2' } = Astro.props;
+const url = postUrl(post);
+const TitleTag = headingLevel as any;
+const hasCover = Boolean(post.cover_image);
+---
+
+<article class="card w-full bg-base-100 shadow-md rounded-xl overflow-hidden flex flex-col md:flex-row group hover:shadow-lg transition-shadow">
+  <div class="flex flex-col gap-3 p-5 flex-1 min-w-0">
+    <TitleTag class="text-xl font-semibold leading-snug">
+      <a href={url} class="hover:text-primary transition-colors">{post.title}</a>
+    </TitleTag>
+
+    <div class="flex flex-wrap items-center gap-2 text-sm text-base-content/70">
+      <span class="inline-flex items-center gap-1 badge badge-soft">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <time datetime={post.date}>{formatDate(post.date)}</time>
+      </span>
+      {post.category && (
+        <a href={`/archive/category/${encodeURIComponent(post.category)}/`} class="inline-flex items-center gap-1 badge badge-soft badge-primary hover:opacity-80">
+          {post.category}
+        </a>
+      )}
+      {post.tags?.length > 0 && (
+        <span class="inline-flex items-center gap-1 badge badge-soft badge-secondary max-w-full">
+          <span class="truncate">{post.tags.join(' / ')}</span>
+        </span>
+      )}
+    </div>
+
+    {post.excerpt && <p class="text-sm opacity-80 line-clamp-2">{post.excerpt}</p>}
+
+    <p class="text-xs opacity-50">
+      {post.word_count} words &nbsp;|&nbsp; {post.read_time} min read
+    </p>
+
+    <p class="mt-1">
+      <a href={url} class="link link-primary link-hover text-sm font-medium" aria-label={`Read: ${post.title}`}>
+        Read more →
+      </a>
+    </p>
+  </div>
+
+  {hasCover && (
+    <a href={url} class="relative md:w-1/3 w-full overflow-hidden block shrink-0" tabindex="-1" aria-hidden="true">
+      <img
+        src={post.cover_image}
+        alt=""
+        width="600"
+        height="400"
+        loading="lazy"
+        decoding="async"
+        class="w-full h-48 md:h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+        onerror="this.style.display='none'"
+      />
+    </a>
+  )}
+</article>

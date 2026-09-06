@@ -1,54 +1,53 @@
-# React + TypeScript + Vite
+# Blog (Astro 重写版)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+旧 React SPA 已备份至 `/tmp/blog-react-backup`,本目录已覆盖重写为 Astro SSG,主攻 SEO。
 
-Currently, two official plugins are available:
+## 为什么 SEO 变好
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+旧站问题:React CSR,`index.html` 只有一个空 `#root`,爬虫首屏无内容;全站共用一个 `<title>`,无 description/canonical/OG/结构化数据;归档靠 `?tag=`/`?category=` 查询参数,不利于收录;无 sitemap/RSS/robots。
 
-## Expanding the ESLint configuration
+新站:
+- SSG 预渲染:首页/分页/归档/文章详情/About 在构建时生成静态 HTML,爬虫直接可见正文
+- 每页独立 title/description/canonical + OG/Twitter + JSON-LD(Blog/BlogPosting/Breadcrumb/WebSite+SearchAction)
+- tag/category 改为静态路由 `/archive/tag/:tag/`, `/archive/category/:category/`,可被收录
+- 自动 sitemap(`/sitemap-index.xml`),`robots.txt`,RSS(`/rss.xml`)
+- 语义化 HTML(`article`/`time`/`nav`/`main`),图片 alt + 懒加载,分页 `rel=prev/next`
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 目录
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- `src/pages/`: `index`(首页), `page/[page]`, `post/[id]`, `archive`, `archive/tag/[tag]`, `archive/category/[category]`, `about`, `search`, `admin/**`, `rss.xml.js`, `robots.txt.ts`
+- `src/layouts/BaseLayout.astro`:全局 SEO head
+- `src/components/`: Navbar/Footer/Sidebar/PostCard/ArchiveTimeline + `admin/*`(React islands)
+- `src/lib/api.ts`:后端接口封装(与 `blog_back_wasm` 对齐)
+- `src/lib/markdown.ts`:构建时 markdown→HTML
+
+## 本地开发
+
+```bash
+cp .env.example .env  # 按需改 PUBLIC_SITE_URL / PUBLIC_API_BASE
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 构建
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+npm run build   # 输出 dist/
+npm run preview
 ```
+
+构建时需要能访问 `PUBLIC_API_BASE`,否则页面会以空数据降级构建(行政后台不受影响)。
+
+## 后台
+
+- `/admin/`, `/admin/posts/`, `/admin/edit/?id=xxx`,Keycloak 登录,noindex,不进 sitemap
+- 旧路由映射:`/dashboard`→`/admin/`,`/post-list`→`/admin/posts/`,`/post-edit`(state传参)→`/admin/edit/?id=`
+
+## 环境变量
+
+| 变量 | 说明 |
+|---|---|
+| `PUBLIC_API_BASE` | 后端 API,如 `https://blog-api.charlie-cloud.me/api` |
+| `PUBLIC_SITE_URL` | 站点根地址(canonical/sitemap/RSS 用) |
+| `PUBLIC_SITE_NAME` | 站点名 |
+| `PUBLIC_KEYCLOAK_URL/REALM/CLIENT_ID` | 后台登录用 |

@@ -1,0 +1,28 @@
+---
+import type { Category } from '../lib/api';
+
+export interface Props {
+  categories: Category[];
+}
+const { categories } = Astro.props;
+---
+
+<section class="card bg-base-100 w-full shadow" aria-label="Categories">
+  <div class="card-body p-4">
+    <h2 class="card-title text-lg">Categories</h2>
+    {categories.length === 0 ? (
+      <p class="text-sm opacity-60">No categories yet.</p>
+    ) : (
+      <ul class="menu bg-base-100 rounded-box p-0">
+        {categories.map((cat) => (
+          <li>
+            <a href={`/archive/category/${encodeURIComponent(cat.name)}/`} class="flex justify-between items-center">
+              <span>{cat.name}</span>
+              <span class="badge badge-sm badge-primary">{cat.post_count}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</section>

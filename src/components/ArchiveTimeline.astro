@@ -1,0 +1,43 @@
+---
+import type { PostPreview } from '../lib/api';
+import { postUrl, formatDate } from '../lib/api';
+
+export interface Props {
+  posts: PostPreview[];
+}
+const { posts } = Astro.props;
+
+const grouped = posts.reduce((acc, post) => {
+  const year = String(post.date || '').split('-')[0] || 'Unknown';
+  (acc[year] = acc[year] || []).push(post);
+  return acc;
+}, {} as Record<string, PostPreview[]>);
+const sortedYears = Object.keys(grouped).sort((a, b) => Number(b) - Number(a));
+---
+
+{posts.length === 0 ? (
+  <p class="opacity-60">No articles found.</p>
+) : (
+  <ol class="timeline timeline-vertical">
+    {sortedYears.map((year) => (
+      <li>
+        <div class="timeline-start text-lg font-bold">{year}</div>
+        <div class="timeline-middle bg-primary"></div>
+        <div class="timeline-end space-y-2 w-full">
+          {grouped[year].map((post) => (
+            <article class="card bg-base-200 shadow-sm p-4 hover:shadow transition-shadow">
+              <h3 class="font-semibold leading-snug">
+                <a href={postUrl(post)} class="hover:text-primary">{post.title}</a>
+              </h3>
+              <p class="text-sm opacity-60 mt-1">
+                <time datetime={post.date}>{formatDate(post.date)}</time>
+                {post.category ? ` · ${post.category}` : ''}
+              </p>
+            </article>
+          ))}
+        </div>
+        <hr class="bg-primary/20" />
+      </li>
+    ))}
+  </ol>
+)}

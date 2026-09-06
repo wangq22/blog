@@ -1,0 +1,28 @@
+---
+import type { Tag } from '../lib/api';
+
+export interface Props {
+  tags: Tag[];
+}
+const { tags } = Astro.props;
+---
+
+<section class="card bg-base-100 shadow w-full" aria-label="Tags">
+  <div class="card-body">
+    <h2 class="card-title text-lg">Tags</h2>
+    {tags.length === 0 ? (
+      <p class="text-sm opacity-60">No tags yet.</p>
+    ) : (
+      <div class="flex flex-wrap gap-2">
+        {tags.map((tag) => (
+          <a
+            href={`/archive/tag/${encodeURIComponent(tag.name)}/`}
+            class={`badge badge-soft ${tag.color_class || 'badge-primary'} cursor-pointer hover:opacity-80`}
+          >
+            {tag.name}
+          </a>
+        ))}
+      </div>
+    )}
+  </div>
+</section>

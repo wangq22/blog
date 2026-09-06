@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AuthGuard from '../../components/admin/AuthGuard';
+import PostListApp from '../../components/admin/PostListApp';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Manage Posts" description="List and manage blog posts." canonicalPath="/admin/posts/" noindex={true}>
+  <div class="px-4 sm:px-8 py-8 max-w-6xl mx-auto">
+    <nav class="breadcrumbs text-sm mb-4" aria-label="Breadcrumb">
+      <ol class="flex gap-2">
+        <li><a href="/" class="link link-hover">Home</a></li>
+        <li><a href="/admin/" class="link link-hover">Admin</a></li>
+        <li aria-current="page">Posts</li>
+      </ol>
+    </nav>
+    <AuthGuard client:only="react">
+      <PostListApp client:only="react" />
+    </AuthGuard>
+  </div>
+</BaseLayout>

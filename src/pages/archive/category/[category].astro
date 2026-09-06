@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Sidebar from '../../../components/Sidebar.astro';
+import ArchiveTimeline from '../../../components/ArchiveTimeline.astro';
+import { fetchUserProfile, fetchCategories, fetchTags, fetchArchive } from '../../../lib/api';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const cats = await fetchCategories().catch(() => []);
+  if (!cats.length) return [];
+  return cats.map((c) => ({ params: { category: c.name } }));
+}
+
+const category = Astro.params.category!;
+const [user, categories, tags, posts] = await Promise.all([
+  fetchUserProfile(),
+  fetchCategories(),
+  fetchTags(),
+  fetchArchive({ category }).catch(() => []),
+]);
+const sorted = [...posts].sort((a, b) => +new Date(b.date) - +new Date(a.date));
+const canonicalPath = `/archive/category/${encodeURIComponent(category)}/`;
+---
+
+<BaseLayout
+  title={`${category} archive`}
+  description={`Articles in category "${category}" (${sorted.length}).`}
+  canonicalPath={canonicalPath}
+>
+  <div class="px-2 sm:px-6 md:px-12 lg:px-16 xl:px-20 py-6 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <Sidebar user={user} categories={categories} tags={tags} />
+    <div class="lg:col-span-3 min-w-0 overflow-hidden">
+      <section class="card bg-base-100 shadow" aria-label={`Articles in ${category}`}>
+        <div class="card-body">
+          <nav class="breadcrumbs text-sm" aria-label="Breadcrumb">
+            <ol class="flex gap-2">
+              <li><a href="/" class="link link-hover">Home</a></li>
+              <li><a href="/archive/" class="link link-hover">Archive</a></li>
+              <li aria-current="page">{category}</li>
+            </ol>
+          </nav>
+          <h1 class="card-title text-2xl mb-1">{category} archive</h1>
+          <p class="text-sm opacity-60 mb-4">{sorted.length} articles</p>
+          <ArchiveTimeline posts={sorted} />
+        </div>
+      </section>
+    </div>
+  </div>
+</BaseLayout>

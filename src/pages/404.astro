@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Page not found" description="The page you requested does not exist." canonicalPath="/404/" noindex={true}>
+  <div class="px-4 py-20 max-w-xl mx-auto text-center">
+    <h1 class="text-5xl font-bold">404</h1>
+    <p class="mt-4 opacity-70">Sorry, this page doesn't exist.</p>
+    <div class="mt-6 flex gap-2 justify-center">
+      <a href="/" class="btn btn-primary">Home</a>
+      <a href="/archive/" class="btn btn-ghost">Archive</a>
+    </div>
+  </div>
+</BaseLayout>
