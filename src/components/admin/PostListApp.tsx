@@ -4,11 +4,7 @@ import { mediaUrl } from '../../lib/api';
 
 function coverOf(post: any): string {
   if (post?.cover_key) return mediaUrl(post.cover_key);
-  const img = post?.cover_image || '';
-  if (!img) return '';
-  if (/^https?:\/\//.test(img)) return img;
-  if (img.startsWith('/api/media/')) return mediaUrl(img);
-  return img;
+  return '';
 }
 
 /** 旧站 pages/admin/PostList.tsx 的移植:修复删除后不刷新 + 补 key */

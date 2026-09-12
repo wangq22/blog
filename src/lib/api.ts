@@ -8,16 +8,14 @@ export interface PostPreview {
   date: string;
   category: string;
   tags: string[];
-  cover_image: string;
-  // R2 keys(新文章);老文章为空,回退 cover_image/content
-  content_key?: string | null;
-  cover_key?: string | null;
+  cover_key: string | null;
   word_count: number;
   read_time: number;
 }
 
 export interface PostDetail extends PostPreview {
   content: string;
+  content_key: string;
   author: string;
 }
 
@@ -108,7 +106,7 @@ function normalizeTags(input: any): string[] {
 }
 
 function normalizePost<T extends PostPreview>(p: T): T {
-  return { ...p, tags: normalizeTags((p as any).tags) };
+  return { ...p, tags: normalizeTags((p as any).tags), cover_key: (p as any).cover_key ?? null };
 }
 
 export async function fetchUserProfile(): Promise<UserProfile> {
@@ -151,12 +149,12 @@ export async function fetchPostById(id: string | number): Promise<PostDetail> {
   return normalizePost(raw);
 }
 
-export async function fetchArchive(params?: { tag?: string; category?: string }): Promise<PostDetail[]> {
+export async function fetchArchive(params?: { tag?: string; category?: string }): Promise<PostPreview[]> {
   const qs = new URLSearchParams();
   if (params?.tag) qs.set('tag', params.tag);
   if (params?.category) qs.set('category', params.category);
   const suffix = qs.toString() ? `?${qs.toString()}` : '';
-  const raw = await getJson<PostDetail[]>(`/archive${suffix}`);
+  const raw = await getJson<PostPreview[]>(`/archive${suffix}`);
   return (raw ?? []).map(normalizePost);
 }
 
@@ -203,26 +201,17 @@ export function absoluteUrl(path: string): string {
   return `${s}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
-/** R2 key -> Worker 代理绝对地址,兼容已带 /api/media/ 前缀或裸 key */
+/** R2 key -> Worker 代理绝对地址:D1 只存 `covers/...` / `posts/...` 裸 key */
 export function mediaUrl(key: string): string {
   const k = String(key || '').trim();
   if (!k) return '';
-  if (/^https?:\/\//.test(k)) return k;
-  if (k.startsWith('/api/media/')) return `${apiBase()}${k.slice(4)}`;
   const clean = k.replace(/^\/+/, '').replace(/^api\/media\//, '');
   return `${apiBase()}/media/${clean}`;
 }
 
-/** 封面解析优先级:cover_key > /api/media/相对路径 > 裸key长相 > 原cover_image */
+/** 封面:有 cover_key 拼代理地址,无则空(无封面) */
 export function resolveCoverImage(p: PostPreview): string {
-  const key = (p as any).cover_key as string | undefined;
-  if (key && key.trim()) return mediaUrl(key);
-  const img = p.cover_image || '';
-  if (!img) return '';
-  if (/^https?:\/\//.test(img)) return img;
-  if (img.startsWith('/api/media/')) return `${apiBase()}${img.slice(4)}`;
-  // 裸 key 长相:covers/xxx / posts/xxx(无空格、无前导/)
-  if (/^(covers|posts)\//.test(img.replace(/^\/+/, ''))) return mediaUrl(img);
-  if (img.startsWith('/')) return img;
-  return img;
+  const key = p.cover_key;
+  if (key && String(key).trim()) return mediaUrl(String(key));
+  return '';
 }
