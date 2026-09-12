@@ -218,7 +218,7 @@ export async function handleCallback(): Promise<string> {
   });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw new Error(`Token exchange failed: ${res.status} ${text.slice(0, 300)}`);
+    throw new Error(`Token exchange failed: ${res.status} ${text.slice(0, 800)}`);
   }
   const data = await res.json();
   persistTokens(data);
