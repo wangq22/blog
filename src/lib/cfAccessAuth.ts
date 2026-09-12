@@ -7,14 +7,14 @@
  *   Authorization:{issuer}/authorization (浏览器前通道跳转,无 CORS 问题)
  *   Redirect URLs 里必须加上: https://blog.charlie-cloud.me/admin/callback/
  *   Scopes 建议: openid email profile
- *   Flow: Authorization Code + PKCE(公开 SPA,不需要 client_secret,不把它放前端)
+ *   Flow: Authorization Code(后端 BFF 持有 client_secret,不把它放前端)
  *
  * 注意:Access 的 /token 端点不返回 CORS 头,浏览器不能直调(会报 CORS blocked,
  * 真实错误也被盖住)。所以 code→token 交换与 refresh 统一走自家后端 BFF 代换:
- *   POST {PUBLIC_API_BASE}/auth/exchange {code, code_verifier, redirect_uri}
+ *   POST {PUBLIC_API_BASE}/auth/exchange {code, redirect_uri}
  *   POST {PUBLIC_API_BASE}/auth/refresh  {refresh_token}
  * 后端(blog_back_wasm/src/route/auth.rs)服务端代发请求,无 CORS 限制;如配了
- * CF_ACCESS_CLIENT_SECRET 还会自动升级为机密客户端模式。
+ * CF_ACCESS_CLIENT_SECRET 由后端 BFF 使用,前端不接触。
  *
  * 前端只需要两个公开变量:
  *   PUBLIC_CF_ACCESS_TEAM_DOMAIN (例 https://xxx.cloudflareaccess.com,结尾不带 /)
@@ -59,7 +59,6 @@ const K_ACCESS_TOKEN = 'cf_access_token';
 const K_REFRESH_TOKEN = 'cf_refresh_token';
 const K_EXPIRES_AT = 'cf_expires_at';
 const K_EMAIL = 'cf_email';
-const K_VERIFIER = 'cf_pkce_verifier';
 const K_STATE = 'cf_oauth_state';
 const K_RETURN_TO = 'cf_return_to';
 
@@ -73,12 +72,6 @@ function randomString(len = 64): string {
   const bytes = new Uint8Array(len);
   crypto.getRandomValues(bytes);
   return b64url(bytes);
-}
-
-async function pkceChallenge(verifier: string): Promise<string> {
-  const data = new TextEncoder().encode(verifier);
-  const digest = await crypto.subtle.digest('SHA-256', data);
-  return b64url(new Uint8Array(digest));
 }
 
 /** 解 JWT payload(不验签,验签由后端 JWKS 完成) */
@@ -129,10 +122,7 @@ function isExpiredSoon(bufferSec = 60): boolean {
 export async function login(returnTo?: string): Promise<void> {
   const cfg = getCfAccessConfig();
   if (!cfg) throw new Error('Missing PUBLIC_CF_ACCESS_TEAM_DOMAIN / PUBLIC_CF_ACCESS_CLIENT_ID');
-  const verifier = randomString(64);
-  const challenge = await pkceChallenge(verifier);
   const state = randomString(32);
-  sessionStorage.setItem(K_VERIFIER, verifier);
   sessionStorage.setItem(K_STATE, state);
   sessionStorage.setItem(K_RETURN_TO, returnTo || window.location.pathname + window.location.search);
   const params = new URLSearchParams({
@@ -140,8 +130,6 @@ export async function login(returnTo?: string): Promise<void> {
     redirect_uri: cfg.redirectUri,
     response_type: 'code',
     scope: 'openid email profile',
-    code_challenge: challenge,
-    code_challenge_method: 'S256',
     state,
   });
   window.location.href = `${cfg.authorizationEndpoint}?${params.toString()}`;
@@ -204,15 +192,11 @@ export async function handleCallback(): Promise<string> {
   if (!code) throw new Error('Missing code in callback');
   const expectState = sessionStorage.getItem(K_STATE);
   if (expectState && state && expectState !== state) throw new Error('State mismatch, login aborted');
-  const verifier = sessionStorage.getItem(K_VERIFIER);
-  if (!verifier) throw new Error('Missing PKCE verifier (session expired?), please login again');
-
   const res = await fetch(`${apiBase()}/auth/exchange`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       code,
-      code_verifier: verifier,
       redirect_uri: cfg.redirectUri,
     }),
   });
@@ -222,7 +206,6 @@ export async function handleCallback(): Promise<string> {
   }
   const data = await res.json();
   persistTokens(data);
-  sessionStorage.removeItem(K_VERIFIER);
   sessionStorage.removeItem(K_STATE);
   const returnTo = sessionStorage.getItem(K_RETURN_TO) || '/admin/';
   sessionStorage.removeItem(K_RETURN_TO);

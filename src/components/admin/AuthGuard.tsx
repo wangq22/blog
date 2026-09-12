@@ -9,7 +9,7 @@ import {
 } from '../../lib/cfAccessAuth';
 
 /**
- * 后台鉴权守卫:Cloudflare Access SaaS OIDC(Authorization Code + PKCE)。
+ * 后台鉴权守卫:Cloudflare Access SaaS OIDC(Authorization Code + client secret)。
  * client:only 使用,不参与 SSG,不影响 SEO。
  * token 存 localStorage 'token'(= Access id_token),adminApi.ts 直接沿用。
  */
