@@ -4,13 +4,17 @@
  * Access 侧配置(ZT Dashboard > Access > Applications > SaaS application > OIDC):
  *   Issuer:      https://<team>.cloudflareaccess.com/cdn-cgi/access/sso/oidc/<client-id>
  *   Discovery:   {issuer}/.well-known/openid-configuration
- *   Authorization:{issuer}/authorization
- *   Token:       {issuer}/token
- *   JWKS:        {issuer}/jwks
- *   UserInfo:    {issuer}/userinfo
+ *   Authorization:{issuer}/authorization (浏览器前通道跳转,无 CORS 问题)
  *   Redirect URLs 里必须加上: https://blog.charlie-cloud.me/admin/callback/
  *   Scopes 建议: openid email profile
  *   Flow: Authorization Code + PKCE(公开 SPA,不需要 client_secret,不把它放前端)
+ *
+ * 注意:Access 的 /token 端点不返回 CORS 头,浏览器不能直调(会报 CORS blocked,
+ * 真实错误也被盖住)。所以 code→token 交换与 refresh 统一走自家后端 BFF 代换:
+ *   POST {PUBLIC_API_BASE}/auth/exchange {code, code_verifier, redirect_uri}
+ *   POST {PUBLIC_API_BASE}/auth/refresh  {refresh_token}
+ * 后端(blog_back_wasm/src/route/auth.rs)服务端代发请求,无 CORS 限制;如配了
+ * CF_ACCESS_CLIENT_SECRET 还会自动升级为机密客户端模式。
  *
  * 前端只需要两个公开变量:
  *   PUBLIC_CF_ACCESS_TEAM_DOMAIN (例 https://xxx.cloudflareaccess.com,结尾不带 /)
@@ -22,9 +26,13 @@ export interface CfAccessConfig {
   clientId: string;
   issuer: string;
   authorizationEndpoint: string;
-  tokenEndpoint: string;
-  userinfoEndpoint: string;
   redirectUri: string;
+}
+
+function apiBase(): string {
+  const base =
+    (import.meta as any).env?.PUBLIC_API_BASE || 'https://blog-api.charlie-cloud.me/api';
+  return String(base).replace(/\/$/, '');
 }
 
 export function getCfAccessConfig(): CfAccessConfig | null {
@@ -41,8 +49,6 @@ export function getCfAccessConfig(): CfAccessConfig | null {
     clientId,
     issuer,
     authorizationEndpoint: `${issuer}/authorization`,
-    tokenEndpoint: `${issuer}/token`,
-    userinfoEndpoint: `${issuer}/userinfo`,
     redirectUri,
   };
 }
@@ -141,19 +147,15 @@ export async function login(returnTo?: string): Promise<void> {
   window.location.href = `${cfg.authorizationEndpoint}?${params.toString()}`;
 }
 
-/** 用 refresh_token 换新 token,成功返回 id_token */
-async function tryRefresh(cfg: CfAccessConfig): Promise<string | null> {
+/** 用 refresh_token 换新 token(走后端 BFF 代换,成功返回 id_token) */
+async function tryRefresh(): Promise<string | null> {
   const refreshToken = localStorage.getItem(K_REFRESH_TOKEN);
   if (!refreshToken) return null;
   try {
-    const res = await fetch(cfg.tokenEndpoint, {
+    const res = await fetch(`${apiBase()}/auth/refresh`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        client_id: cfg.clientId,
-        refresh_token: refreshToken,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken }),
     });
     if (!res.ok) {
       clearTokens();
@@ -189,7 +191,7 @@ export function clearTokens(): void {
 
 /**
  * 处理授权回调 (?code= & state=)。成功返回登录后应回跳的地址。
- * code 换 token 时是公开客户端 + PKCE,不带 client_secret。
+ * code 换 token 走后端 BFF 代换(浏览器直调 Access /token 会被 CORS 拦掉)。
  */
 export async function handleCallback(): Promise<string> {
   const cfg = getCfAccessConfig();
@@ -205,20 +207,18 @@ export async function handleCallback(): Promise<string> {
   const verifier = sessionStorage.getItem(K_VERIFIER);
   if (!verifier) throw new Error('Missing PKCE verifier (session expired?), please login again');
 
-  const res = await fetch(cfg.tokenEndpoint, {
+  const res = await fetch(`${apiBase()}/auth/exchange`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'authorization_code',
-      client_id: cfg.clientId,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       code,
-      redirect_uri: cfg.redirectUri,
       code_verifier: verifier,
+      redirect_uri: cfg.redirectUri,
     }),
   });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw new Error(`Token exchange failed: ${res.status} ${text.slice(0, 200)}`);
+    throw new Error(`Token exchange failed: ${res.status} ${text.slice(0, 300)}`);
   }
   const data = await res.json();
   persistTokens(data);
@@ -231,12 +231,11 @@ export async function handleCallback(): Promise<string> {
 
 /** 拿一个可用的 id_token(未过期直接返回;快过期则尝试 refresh)。 */
 export async function getValidIdToken(): Promise<string | null> {
-  const cfg = getCfAccessConfig();
-  if (!cfg) return null;
+  if (!getCfAccessConfig()) return null;
   const t = getStoredIdToken();
   if (!t) return null;
   if (!isExpiredSoon(60)) return t;
-  return tryRefresh(cfg);
+  return tryRefresh();
 }
 
 export function logout(): void {
