@@ -1,5 +1,15 @@
 import { useEffect, useState } from 'react';
 import { adminFetchPostList, adminDeletePost } from '../../lib/adminApi';
+import { mediaUrl } from '../../lib/api';
+
+function coverOf(post: any): string {
+  if (post?.cover_key) return mediaUrl(post.cover_key);
+  const img = post?.cover_image || '';
+  if (!img) return '';
+  if (/^https?:\/\//.test(img)) return img;
+  if (img.startsWith('/api/media/')) return mediaUrl(img);
+  return img;
+}
 
 /** 旧站 pages/admin/PostList.tsx 的移植:修复删除后不刷新 + 补 key */
 export default function PostListApp() {
@@ -51,10 +61,10 @@ export default function PostListApp() {
               <tr key={String(post._id)}>
                 <td>
                   <div className="flex items-center gap-3">
-                    {post.cover_image && (
+                    {coverOf(post) && (
                       <div className="avatar">
                         <div className="mask mask-squircle h-12 w-12">
-                          <img src={post.cover_image} alt="" />
+                          <img src={coverOf(post)} alt="" />
                         </div>
                       </div>
                     )}

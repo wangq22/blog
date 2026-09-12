@@ -7,7 +7,7 @@ const q = Astro.url.searchParams.get('q')?.trim() || '';
 
 <BaseLayout
   title={q ? `Search: ${q}` : 'Search'}
-  description={q ? `Search results for "${q}".` : 'Search articles by title or content.'}
+  description={q ? `Search results for "${q}".` : 'Search articles by title or excerpt.'}
   canonicalPath={q ? `/search/?q=${encodeURIComponent(q)}` : '/search/'}
   noindex={!q}
 >
@@ -28,7 +28,7 @@ const q = Astro.url.searchParams.get('q')?.trim() || '';
         </div>
       </>
     ) : (
-      <p class="opacity-60">Type a keyword above to search article titles and content.</p>
+      <p class="opacity-60">Type a keyword above to search article titles and excerpts.</p>
     )}
   </div>
 </BaseLayout>

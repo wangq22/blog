@@ -9,6 +9,9 @@ export interface PostPreview {
   category: string;
   tags: string[];
   cover_image: string;
+  // R2 keys(新文章);老文章为空,回退 cover_image/content
+  content_key?: string | null;
+  cover_key?: string | null;
   word_count: number;
   read_time: number;
 }
@@ -198,4 +201,28 @@ export function absoluteUrl(path: string): string {
   if (/^https?:\/\//.test(path)) return path;
   const s = siteUrl();
   return `${s}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
+/** R2 key -> Worker 代理绝对地址,兼容已带 /api/media/ 前缀或裸 key */
+export function mediaUrl(key: string): string {
+  const k = String(key || '').trim();
+  if (!k) return '';
+  if (/^https?:\/\//.test(k)) return k;
+  if (k.startsWith('/api/media/')) return `${apiBase()}${k.slice(4)}`;
+  const clean = k.replace(/^\/+/, '').replace(/^api\/media\//, '');
+  return `${apiBase()}/media/${clean}`;
+}
+
+/** 封面解析优先级:cover_key > /api/media/相对路径 > 裸key长相 > 原cover_image */
+export function resolveCoverImage(p: PostPreview): string {
+  const key = (p as any).cover_key as string | undefined;
+  if (key && key.trim()) return mediaUrl(key);
+  const img = p.cover_image || '';
+  if (!img) return '';
+  if (/^https?:\/\//.test(img)) return img;
+  if (img.startsWith('/api/media/')) return `${apiBase()}${img.slice(4)}`;
+  // 裸 key 长相:covers/xxx / posts/xxx(无空格、无前导/)
+  if (/^(covers|posts)\//.test(img.replace(/^\/+/, ''))) return mediaUrl(img);
+  if (img.startsWith('/')) return img;
+  return img;
 }

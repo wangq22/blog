@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { fetchPostById, fetchAllPosts, absoluteUrl, siteName, formatDate, postUrl } from '../../lib/api';
+import { fetchPostById, fetchAllPosts, absoluteUrl, siteName, formatDate, postUrl, resolveCoverImage } from '../../lib/api';
 import { renderMarkdown, toDescription } from '../../lib/markdown';
 
 export const prerender = true;
@@ -24,13 +24,14 @@ if (!post) return Astro.redirect('/404/');
 const html = renderMarkdown(post.content || '');
 const description = toDescription(post.excerpt, post.content);
 const canonicalPath = postUrl(post);
-const ogImage = post.cover_image || '/og-default.png';
+const cover = resolveCoverImage(post);
+const ogImage = cover || '/og-default.png';
 const name = siteName();
 
-const coverAbs = post.cover_image
-  ? post.cover_image.startsWith('http')
-    ? post.cover_image
-    : absoluteUrl(post.cover_image)
+const coverAbs = cover
+  ? cover.startsWith('http')
+    ? cover
+    : absoluteUrl(cover)
   : undefined;
 
 const blogPostingLd = {
@@ -102,10 +103,10 @@ const breadcrumbLd = {
             ))}
           </div>
         )}
-        {post.cover_image && (
+        {cover && (
           <figure class="mt-6">
             <img
-              src={post.cover_image}
+              src={cover}
               alt={`${post.title} cover`}
               width="1200"
               height="630"
