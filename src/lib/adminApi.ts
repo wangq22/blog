@@ -1,4 +1,4 @@
-// 后台专用 API(浏览器端,带 Keycloak Bearer token)
+// 后台专用 API(浏览器端,带 Cloudflare Access id_token,存于 localStorage 'token')
 // 与旧站 services/PostService + utils/HttpClient 行为一致
 
 const BASE =

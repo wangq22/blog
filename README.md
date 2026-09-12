@@ -40,8 +40,9 @@ npm run preview
 
 ## 后台
 
-- `/admin/`, `/admin/posts/`, `/admin/edit/?id=xxx`,Keycloak 登录,noindex,不进 sitemap
+- `/admin/`, `/admin/posts/`, `/admin/edit/?id=xxx`,Cloudflare Access SaaS OIDC 登录,noindex,不进 sitemap
 - 旧路由映射:`/dashboard`→`/admin/`,`/post-list`→`/admin/posts/`,`/post-edit`(state传参)→`/admin/edit/?id=`
+- 登录回调页:`/admin/callback/`(需加到 Access SaaS 应用的 Redirect URLs)
 
 ## 环境变量
 
@@ -50,4 +51,5 @@ npm run preview
 | `PUBLIC_API_BASE` | 后端 API,如 `https://blog-api.charlie-cloud.me/api` |
 | `PUBLIC_SITE_URL` | 站点根地址(canonical/sitemap/RSS 用) |
 | `PUBLIC_SITE_NAME` | 站点名 |
-| `PUBLIC_KEYCLOAK_URL/REALM/CLIENT_ID` | 后台登录用 |
+| `PUBLIC_CF_ACCESS_TEAM_DOMAIN` | Access 团队域名,如 `https://xxx.cloudflareaccess.com` |
+| `PUBLIC_CF_ACCESS_CLIENT_ID` | Access SaaS OIDC 应用的 Client ID |

@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AuthCallback from '../../components/admin/AuthCallback';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Login callback" description="Completing login." canonicalPath="/admin/callback/" noindex={true}>
+  <div class="px-4 sm:px-8 py-8 max-w-3xl mx-auto">
+    <AuthCallback client:only="react" />
+  </div>
+</BaseLayout>
