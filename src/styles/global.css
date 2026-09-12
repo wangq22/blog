@@ -36,6 +36,26 @@ html {
 [data-theme="dark"] .markdown-body pre {
   background: #0d1117 !important;
 }
+/* 标题锚点(markdown.ts heading renderer 插入的 `#`):平时隐藏,悬停标题或聚焦时才显形 */
+.markdown-body .heading-anchor {
+  opacity: 0;
+  margin-right: 0.375rem;
+  font-weight: 400;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+.markdown-body h1:hover .heading-anchor,
+.markdown-body h2:hover .heading-anchor,
+.markdown-body h3:hover .heading-anchor,
+.markdown-body h4:hover .heading-anchor,
+.markdown-body h5:hover .heading-anchor,
+.markdown-body h6:hover .heading-anchor,
+.markdown-body .heading-anchor:focus-visible {
+  opacity: 0.45;
+}
+.markdown-body .heading-anchor:hover {
+  opacity: 1;
+}
 
 /* 跳过导航(无障碍,仅键盘可见) */
 .skip-link {
