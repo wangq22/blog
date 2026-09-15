@@ -1,5 +1,6 @@
 ---
 import type { UserProfile } from '../lib/api';
+import ProfileDetails from './ProfileDetails.astro';
 
 export interface Props {
   user: UserProfile;
@@ -22,6 +23,7 @@ const { user } = Astro.props;
   <div class="card-body">
     <h2 class="card-title">{user.name}</h2>
     {user.bio && <p class="text-sm opacity-80">{user.bio}</p>}
+    <ProfileDetails user={user} />
     <div class="card-actions items-center mt-2">
       {user.bilibili_url && (
         <a class="btn btn-soft btn-info btn-sm" href={user.bilibili_url} target="_blank" rel="noopener noreferrer me" aria-label="bilibili">

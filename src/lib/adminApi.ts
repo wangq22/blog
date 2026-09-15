@@ -1,6 +1,8 @@
 // 后台专用 API(浏览器端,带 Cloudflare Access id_token,存于 localStorage 'token')
 // 与旧站 services/PostService + utils/HttpClient 行为一致
 
+import type { UserProfile } from './api';
+
 const BASE =
   (import.meta as any).env?.PUBLIC_API_BASE || 'https://blog-api.charlie-cloud.me/api';
 
@@ -69,6 +71,33 @@ export async function adminDeletePost(id: string) {
   const res = await fetch(`${BASE}/protected/post/${id}`, {
     method: 'DELETE',
     headers: authHeaders(),
+  });
+  return handle(res);
+}
+
+/** 站长资料更新(需登录)。只传要改的字段即可,缺省字段保持原值,空字符串表示清空。 */
+export interface UserProfileUpdate {
+  name?: string;
+  bio?: string;
+  avatar_url?: string;
+  github_url?: string;
+  bilibili_url?: string;
+  timezone?: string;
+  city?: string;
+  email?: string;
+  affiliation?: string;
+}
+
+export async function adminFetchUserProfile(): Promise<UserProfile> {
+  const res = await fetch(`${BASE}/user`, { headers: authHeaders() });
+  return handle<UserProfile>(res);
+}
+
+export async function adminUpdateUserProfile(profile: UserProfileUpdate) {
+  const res = await fetch(`${BASE}/protected/user`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify(profile),
   });
   return handle(res);
 }

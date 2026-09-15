@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Sidebar from '../components/Sidebar.astro';
+import ProfileDetails from '../components/ProfileDetails.astro';
 import { fetchUserProfile, fetchCategories, fetchTags } from '../lib/api';
 
 export const prerender = true;
@@ -10,11 +11,16 @@ const [user, categories, tags] = await Promise.all([
   fetchCategories(),
   fetchTags(),
 ]);
+
+const aboutDescription =
+  `About ${user.name}${user.bio ? ` — ${user.bio}` : ''}` +
+  `${user.affiliation ? ` | ${user.affiliation}` : ''}` +
+  `${user.city ? ` | ${user.city}` : ''}.`;
 ---
 
 <BaseLayout
   title="About Me"
-  description={`About ${user.name}${user.bio ? ` — ${user.bio}` : ''}.`}
+  description={aboutDescription}
   canonicalPath="/about/"
   extraJsonLd={{
     '@context': 'https://schema.org',
@@ -22,9 +28,14 @@ const [user, categories, tags] = await Promise.all([
     mainEntity: {
       '@type': 'Person',
       name: user.name,
-      description: user.bio,
+      description: aboutDescription,
       image: user.avatar_url,
       sameAs: [user.github_url, user.bilibili_url].filter(Boolean),
+      ...(user.email ? { email: `mailto:${user.email}` } : {}),
+      ...(user.city ? { address: { '@type': 'PostalAddress', addressLocality: user.city } } : {}),
+      ...(user.affiliation
+        ? { affiliation: { '@type': 'Organization', name: user.affiliation } }
+        : {}),
     },
   }}
 >
@@ -51,6 +62,7 @@ const [user, categories, tags] = await Promise.all([
               ) : (
                 <p class="opacity-60">Nothing here yet — check back soon.</p>
               )}
+              <ProfileDetails user={user} />
               <div class="flex gap-2">
                 {user.github_url && (
                   <a href={user.github_url} target="_blank" rel="noopener noreferrer me" class="btn btn-sm btn-soft">GitHub</a>

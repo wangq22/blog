@@ -40,9 +40,20 @@ npm run preview
 
 ## 后台
 
-- `/admin/`, `/admin/posts/`, `/admin/edit/?id=xxx`,Cloudflare Access SaaS OIDC 登录,noindex,不进 sitemap
+- `/admin/`, `/admin/posts/`, `/admin/edit/?id=xxx`, `/admin/profile/`,Cloudflare Access SaaS OIDC 登录,noindex,不进 sitemap
 - 旧路由映射:`/dashboard`→`/admin/`,`/post-list`→`/admin/posts/`,`/post-edit`(state传参)→`/admin/edit/?id=`
 - 登录回调页:`/admin/callback/`(需加到 Access SaaS 应用的 Redirect URLs)
+
+## 站长资料
+
+用户表新增的 `timezone`、`city`、`email`、`affiliation` 字段需要先执行一次 D1 迁移:
+
+```bash
+cd ../blog_back_wasm
+npx wrangler d1 execute blog --remote --file=./migrations/0004_user_profile_extend.sql
+```
+
+登录后台后打开 `/admin/profile/` 填写资料；保存后会触发 Pages 重建，资料会显示在侧栏和 About 页面。
 
 ## 环境变量
 

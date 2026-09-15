@@ -1,0 +1,53 @@
+---
+import type { UserProfile } from '../lib/api';
+
+export interface Props {
+  user: UserProfile;
+}
+
+const { user } = Astro.props;
+const hasDetails = Boolean(user.city || user.timezone || user.affiliation || user.email);
+---
+
+{hasDetails && (
+  <dl class="mt-1 space-y-2 text-sm" aria-label="Author details">
+    {user.city && (
+      <div class="flex items-start gap-2">
+        <dt class="flex min-w-20 shrink-0 items-center gap-2 opacity-70">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          City
+        </dt>
+        <dd class="min-w-0 break-words opacity-80">{user.city}</dd>
+      </div>
+    )}
+    {user.timezone && (
+      <div class="flex items-start gap-2">
+        <dt class="flex min-w-20 shrink-0 items-center gap-2 opacity-70">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          Timezone
+        </dt>
+        <dd class="min-w-0 break-words opacity-80">{user.timezone}</dd>
+      </div>
+    )}
+    {user.affiliation && (
+      <div class="flex items-start gap-2">
+        <dt class="flex min-w-20 shrink-0 items-center gap-2 opacity-70">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 21v-4h6v4"/><path d="M8 7h2m4 0h2M8 11h2m4 0h2"/></svg>
+          Affiliation
+        </dt>
+        <dd class="min-w-0 break-words opacity-80">{user.affiliation}</dd>
+      </div>
+    )}
+    {user.email && (
+      <div class="flex items-start gap-2">
+        <dt class="flex min-w-20 shrink-0 items-center gap-2 opacity-70">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+          Email
+        </dt>
+        <dd class="min-w-0 break-words">
+          <a class="link link-hover break-all" href={`mailto:${user.email}`}>{user.email}</a>
+        </dd>
+      </div>
+    )}
+  </dl>
+)}

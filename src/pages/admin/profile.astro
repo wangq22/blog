@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AuthGuard from '../../components/admin/AuthGuard';
+import ProfileEditApp from '../../components/admin/ProfileEditApp';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Profile" description="Edit blog author profile." canonicalPath="/admin/profile/" noindex={true}>
+  <div class="px-4 py-8 sm:px-8 mx-auto max-w-5xl">
+    <nav class="breadcrumbs mb-4 text-sm" aria-label="Breadcrumb">
+      <ol class="flex gap-2">
+        <li><a href="/" class="link link-hover">Home</a></li>
+        <li><a href="/admin/" class="link link-hover">Admin</a></li>
+        <li aria-current="page">Profile</li>
+      </ol>
+    </nav>
+    <AuthGuard client:only="react">
+      <ProfileEditApp client:only="react" />
+    </AuthGuard>
+  </div>
+</BaseLayout>

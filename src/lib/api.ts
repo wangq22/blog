@@ -37,6 +37,14 @@ export interface UserProfile {
   avatar_url: string;
   github_url?: string;
   bilibili_url?: string;
+  /** IANA 时区,如 Asia/Shanghai(后端 0004 migration 新增,老数据为 null) */
+  timezone?: string | null;
+  /** 所在城市,如 Shanghai, China */
+  city?: string | null;
+  /** 联系邮箱,前端以 mailto 链接公开显示 */
+  email?: string | null;
+  /** 所属机构或公司 */
+  affiliation?: string | null;
 }
 
 export interface Tag {
@@ -117,6 +125,10 @@ export async function fetchUserProfile(): Promise<UserProfile> {
       name: "Charlie Wang's Blog",
       bio: '',
       avatar_url: '/icon-512.png',
+      timezone: '',
+      city: '',
+      email: '',
+      affiliation: '',
     };
   }
 }
