@@ -2,8 +2,6 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import AuthGuard from '../../components/admin/AuthGuard';
 
-const apiBase = import.meta.env.PUBLIC_API_BASE || 'https://blog-api.charlie-cloud.me/api';
-
 export const prerender = true;
 ---
 
@@ -15,7 +13,7 @@ export const prerender = true;
         <li aria-current="page">Admin</li>
       </ol>
     </nav>
-    <AuthGuard client:only="react" scheduleApiBase={apiBase}>
+    <AuthGuard client:only="react">
       <div>
         <h1 class="text-2xl font-bold mb-4">Dashboard</h1>
         <div class="grid sm:grid-cols-2 gap-4">
@@ -30,6 +28,10 @@ export const prerender = true;
           <a href="/admin/profile/" class="card bg-base-200 p-6 hover:shadow">
             <span class="font-semibold">Edit Profile</span>
             <span class="block text-sm opacity-60 mt-1">Update your bio and public details</span>
+          </a>
+          <a href="/admin/schedule/" class="card bg-base-200 p-6 hover:shadow">
+            <span class="font-semibold">My Schedule</span>
+            <span class="block text-sm opacity-60 mt-1">Plan tasks around class and review the results</span>
           </a>
         </div>
       </div>

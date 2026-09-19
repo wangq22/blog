@@ -141,7 +141,10 @@ export default function ScheduleOwnerApp({ apiBase }: ScheduleOwnerAppProps) {
           <h2 id="schedule-owner-heading" className="text-2xl font-bold">Owner controls</h2>
           <p className="mt-2 max-w-2xl text-sm text-base-content/65">Plan work around class, review completed time, and give the next AI schedule a little context.</p>
         </div>
-        <a className="btn btn-sm btn-soft" href="/schedule/">View public schedule</a>
+        <div className="flex flex-wrap gap-2">
+          <a className="btn btn-sm btn-ghost" href="/admin/">Back to dashboard</a>
+          <a className="btn btn-sm btn-soft" href="/schedule/">View public schedule</a>
+        </div>
       </div>
 
       <div className="schedule-task-layout schedule-owner-layout">
