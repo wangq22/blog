@@ -7,13 +7,14 @@ import {
   login,
   logout,
 } from '../../lib/cfAccessAuth';
+import ScheduleOwnerApp from '../schedule/ScheduleOwnerApp';
 
 /**
  * 后台鉴权守卫:Cloudflare Access SaaS OIDC(Authorization Code + client secret)。
  * client:only 使用,不参与 SSG,不影响 SEO。
  * token 存 localStorage 'token'(= Access id_token),adminApi.ts 直接沿用。
  */
-export default function AuthGuard({ children }: { children: ReactNode }) {
+export default function AuthGuard({ children, scheduleApiBase }: { children: ReactNode; scheduleApiBase?: string }) {
   const [status, setStatus] = useState<'loading' | 'authed' | 'unauthed' | 'misconfig'>('loading');
   const [email, setEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +120,7 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
         </button>
       </div>
       {children}
+      {scheduleApiBase && <ScheduleOwnerApp apiBase={scheduleApiBase} />}
     </div>
   );
 }

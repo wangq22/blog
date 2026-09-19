@@ -46,7 +46,7 @@ npm run preview
 
 ## My Schedule
 
-`/schedule/` 是一个运行时 React island:日历从代码里的结构化周课表渲染,待办和 emoji 反应从 Worker API 读取。原始课表图片只用于录入课程,不会被发布。
+`/schedule/` 是一个运行时 React island:日历从代码里的结构化周课表渲染,公开待办和 emoji 反应从 Worker API 读取。登录 `/admin/` 后,Dashboard 下方的 Owner controls 用来新增任务、复盘和查看 AI 学习记录。原始课表图片只用于录入课程,不会被发布。
 
 首次部署调度功能时,在 Worker 目录执行一次 D1 迁移:
 
