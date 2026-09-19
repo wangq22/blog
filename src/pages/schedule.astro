@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ScheduleApp from '../components/schedule/ScheduleApp';
+import { CLASS_SCHEDULE, SCHEDULE_WEEK_START } from '../data/schedule';
+
+const apiBase = import.meta.env.PUBLIC_API_BASE || 'https://blog-api.charlie-cloud.me/api';
+---
+
+<BaseLayout
+  title="My Schedule"
+  description="A live class calendar and AI-assisted todo list."
+  canonicalPath="/schedule/"
+  noindex={false}
+>
+  <ScheduleApp client:load classes={CLASS_SCHEDULE} weekStart={SCHEDULE_WEEK_START} apiBase={apiBase} />
+</BaseLayout>

@@ -15,9 +15,9 @@
 
 ## 目录
 
-- `src/pages/`: `index`(首页), `page/[page]`, `post/[id]`, `archive`, `archive/tag/[tag]`, `archive/category/[category]`, `about`, `search`, `admin/**`, `rss.xml.js`, `robots.txt.ts`
+- `src/pages/`: `index`(首页), `page/[page]`, `post/[id]`, `archive`, `archive/tag/[tag]`, `archive/category/[category]`, `about`, `schedule`, `search`, `admin/**`, `rss.xml.js`, `robots.txt.ts`
 - `src/layouts/BaseLayout.astro`:全局 SEO head
-- `src/components/`: Navbar/Footer/Sidebar/PostCard/ArchiveTimeline + `admin/*`(React islands)
+- `src/components/`: Navbar/Footer/Sidebar/PostCard/ArchiveTimeline + `schedule/*`/`admin/*`(React islands)
 - `src/lib/api.ts`:后端接口封装(与 `blog_back_wasm` 对齐)
 - `src/lib/markdown.ts`:构建时 markdown→HTML
 
@@ -43,6 +43,19 @@ npm run preview
 - `/admin/`, `/admin/posts/`, `/admin/edit/?id=xxx`, `/admin/profile/`,Cloudflare Access SaaS OIDC 登录,noindex,不进 sitemap
 - 旧路由映射:`/dashboard`→`/admin/`,`/post-list`→`/admin/posts/`,`/post-edit`(state传参)→`/admin/edit/?id=`
 - 登录回调页:`/admin/callback/`(需加到 Access SaaS 应用的 Redirect URLs)
+
+## My Schedule
+
+`/schedule/` 是一个运行时 React island:日历从代码里的结构化周课表渲染,待办和 emoji 反应从 Worker API 读取。原始课表图片只用于录入课程,不会被发布。
+
+首次部署调度功能时,在 Worker 目录执行一次 D1 迁移:
+
+```bash
+cd ../blog_back_wasm
+npx wrangler d1 execute blog --remote --file=./migrations/0005_schedule.sql
+```
+
+Worker 的 `AI` binding 和 5 分钟 cron 已写入 `wrangler.toml`;默认模型是 `@cf/deepseek-ai/deepseek-v4-flash-0731`,也可以用 `SCHEDULE_AI_MODEL` 覆盖。`SCHEDULE_UTC_OFFSET` 控制课表的本地偏移,当前配置为 Ann Arbor 的 `-04:00`。
 
 ## 站长资料
 
