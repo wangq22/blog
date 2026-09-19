@@ -11,6 +11,26 @@ export interface ReviewItem {
 
 export interface LearningNote {
   content: string;
+  ai_model?: string;
+  updated_at?: string;
+}
+
+export type OwnerTaskStatus = 'planned' | 'in_progress' | 'awaiting_review' | 'done' | 'skipped' | 'cancelled';
+
+export interface OwnerTask {
+  id: number;
+  title: string;
+  notes?: string;
+  deadline?: string;
+  scheduled_start: string;
+  scheduled_end: string;
+  estimated_minutes: number;
+  status: OwnerTaskStatus;
+  ai_reason?: string;
+  ai_model?: string;
+  actual_minutes?: number | null;
+  completion_summary?: string;
+  created_at?: string;
   updated_at?: string;
 }
 
