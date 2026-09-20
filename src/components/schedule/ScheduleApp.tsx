@@ -30,8 +30,8 @@ interface ScheduleAppProps {
 }
 
 const CALENDAR_START = 8 * 60;
-const CALENDAR_END = 18 * 60;
-const CALENDAR_HEIGHT = 660;
+const CALENDAR_END = 22 * 60;
+const CALENDAR_HEIGHT = 840;
 const EMOJIS = ['👏', '🔥', '💡', '🚀', '☕'];
 const PUBLIC_TASK_STATUSES = new Set<TaskStatus>(['planned', 'in_progress', 'awaiting_review']);
 
@@ -94,6 +94,22 @@ function getTaskReaction(task: PublicTask, emoji: string): number {
   return task.reactions?.find((reaction) => reaction.emoji === emoji)?.count ?? 0;
 }
 
+function taskDateKey(task: PublicTask): string {
+  const date = new Date(task.scheduled_start);
+  return Number.isNaN(date.getTime()) ? '' : dateKey(date);
+}
+
+function taskTimeRange(task: PublicTask): string {
+  const formatter = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
+  return `${formatter.format(new Date(task.scheduled_start))}–${formatter.format(new Date(task.scheduled_end))}`;
+}
+
+function taskCalendarColor(task: PublicTask): string {
+  if (task.status === 'awaiting_review') return 'schedule-calendar-task--amber';
+  if (task.status === 'in_progress') return 'schedule-calendar-task--rose';
+  return 'schedule-calendar-task--slate';
+}
+
 export default function ScheduleApp({ classes, weekStart, apiBase }: ScheduleAppProps) {
   const api = apiRoot(apiBase);
   const [currentWeek, setCurrentWeek] = useState(() => mondayOf(new Date()));
@@ -108,7 +124,22 @@ export default function ScheduleApp({ classes, weekStart, apiBase }: ScheduleApp
     return date;
   }), [currentWeek]);
 
-  const timeLabels = useMemo(() => Array.from({ length: 11 }, (_, index) => CALENDAR_START + index * 60), []);
+  const timeLabels = useMemo(
+    () => Array.from({ length: (CALENDAR_END - CALENDAR_START) / 60 + 1 }, (_, index) => CALENDAR_START + index * 60),
+    [],
+  );
+
+  const tasksByDay = useMemo(() => {
+    const grouped = new Map<string, PublicTask[]>();
+    for (const task of tasks) {
+      const key = taskDateKey(task);
+      if (!key) continue;
+      const dayTasks = grouped.get(key) ?? [];
+      dayTasks.push(task);
+      grouped.set(key, dayTasks);
+    }
+    return grouped;
+  }, [tasks]);
 
   async function refreshTasks() {
     const response = await fetch(`${api}/schedule/tasks`, { headers: { Accept: 'application/json' } });
@@ -182,8 +213,8 @@ export default function ScheduleApp({ classes, weekStart, apiBase }: ScheduleApp
         <div className="card-body p-4 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="schedule-kicker">Fixed commitments</p>
-              <h2 id="calendar-heading" className="card-title text-2xl">Class calendar</h2>
+              <p className="schedule-kicker">Classes + scheduled tasks</p>
+              <h2 id="calendar-heading" className="card-title text-2xl">Schedule calendar</h2>
             </div>
             <div className="flex items-center gap-2">
               <button type="button" className="btn btn-sm btn-ghost" onClick={() => changeWeek(-1)} aria-label="Previous week">←</button>
@@ -236,6 +267,29 @@ export default function ScheduleApp({ classes, weekStart, apiBase }: ScheduleApp
                         </article>
                       );
                     })}
+                    {(tasksByDay.get(dateKey(day)) ?? []).map((task) => {
+                      const start = new Date(task.scheduled_start);
+                      const end = new Date(task.scheduled_end);
+                      const startMinutes = start.getHours() * 60 + start.getMinutes() + start.getSeconds() / 60;
+                      const endMinutes = end.getHours() * 60 + end.getMinutes() + end.getSeconds() / 60;
+                      const clippedStart = Math.max(startMinutes, CALENDAR_START);
+                      const clippedEnd = Math.min(endMinutes, CALENDAR_END);
+                      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || clippedEnd <= clippedStart) return null;
+                      const top = ((clippedStart - CALENDAR_START) / (CALENDAR_END - CALENDAR_START)) * 100;
+                      const height = ((clippedEnd - clippedStart) / (CALENDAR_END - CALENDAR_START)) * 100;
+                      return (
+                        <article
+                          className={`schedule-event schedule-calendar-task ${taskCalendarColor(task)}`}
+                          key={`task-${task.id}`}
+                          style={{ top: `${top}%`, height: `${height}%` }}
+                          title={`${task.title} · ${taskTimeRange(task)} · ${task.estimated_minutes} min`}
+                        >
+                          <strong>{task.title}</strong>
+                          <span>Task · {task.estimated_minutes} min</span>
+                          <small>{taskTimeRange(task)}</small>
+                        </article>
+                      );
+                    })}
                   </div>
                 ))}
               </div>
@@ -245,6 +299,7 @@ export default function ScheduleApp({ classes, weekStart, apiBase }: ScheduleApp
             <span className="inline-flex items-center gap-1.5"><i className="schedule-legend schedule-legend--blue" /> EECS</span>
             <span className="inline-flex items-center gap-1.5"><i className="schedule-legend schedule-legend--mint" /> STATS</span>
             <span className="inline-flex items-center gap-1.5"><i className="schedule-legend schedule-legend--violet" /> ASTRO</span>
+            <span className="inline-flex items-center gap-1.5"><i className="schedule-legend schedule-legend--task" /> Task</span>
           </div>
         </div>
       </section>

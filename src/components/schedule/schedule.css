@@ -189,6 +189,19 @@
 [data-theme='dark'] .schedule-event--mint { background: color-mix(in srgb, oklch(50% .13 155) 50%, transparent); color: oklch(84% .11 155); }
 [data-theme='dark'] .schedule-event--violet { background: color-mix(in srgb, oklch(52% .14 305) 50%, transparent); color: oklch(85% .11 305); }
 
+.schedule-calendar-task {
+  z-index: 2;
+  border-left-width: 4px;
+}
+
+.schedule-calendar-task--slate { background: color-mix(in srgb, oklch(62% .08 250) 78%, transparent); color: oklch(35% .08 250); }
+.schedule-calendar-task--rose { background: color-mix(in srgb, oklch(72% .16 20) 78%, transparent); color: oklch(42% .13 20); }
+.schedule-calendar-task--amber { background: color-mix(in srgb, oklch(78% .16 75) 82%, transparent); color: oklch(42% .12 75); }
+
+[data-theme='dark'] .schedule-calendar-task--slate { background: color-mix(in srgb, oklch(48% .08 250) 65%, transparent); color: oklch(85% .08 250); }
+[data-theme='dark'] .schedule-calendar-task--rose { background: color-mix(in srgb, oklch(52% .14 20) 65%, transparent); color: oklch(86% .1 20); }
+[data-theme='dark'] .schedule-calendar-task--amber { background: color-mix(in srgb, oklch(54% .13 75) 65%, transparent); color: oklch(88% .1 75); }
+
 .schedule-legend {
   width: .55rem;
   height: .55rem;
@@ -197,6 +210,7 @@
 .schedule-legend--blue { background: oklch(67% .14 235); }
 .schedule-legend--mint { background: oklch(70% .15 155); }
 .schedule-legend--violet { background: oklch(68% .16 305); }
+.schedule-legend--task { background: oklch(62% .08 250); }
 
 .schedule-task-layout {
   display: grid;
