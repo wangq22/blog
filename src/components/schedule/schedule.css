@@ -219,6 +219,10 @@
   margin-top: 1.5rem;
 }
 
+.schedule-owner-layout {
+  align-items: start;
+}
+
 .schedule-empty {
   display: flex;
   align-items: center;

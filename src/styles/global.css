@@ -89,3 +89,30 @@ html {
   left: 0.5rem;
   top: 0.5rem;
 }
+
+/* 后台 Markdown 编辑器：贴合站点主题，去掉第三方组件自带的重阴影。 */
+.admin-markdown-editor .w-md-editor {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.admin-markdown-editor .w-md-editor-toolbar {
+  border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  background: color-mix(in srgb, currentColor 2.5%, transparent);
+  padding: 0.5rem 0.75rem;
+}
+
+.admin-markdown-editor .w-md-editor-content,
+.admin-markdown-editor .w-md-editor-area,
+.admin-markdown-editor .w-md-editor-preview {
+  background: transparent;
+}
+
+.admin-markdown-editor .w-md-editor-text-pre,
+.admin-markdown-editor .w-md-editor-text-input,
+.admin-markdown-editor .wmde-markdown {
+  font-size: 0.92rem !important;
+  line-height: 1.7 !important;
+}

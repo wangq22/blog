@@ -315,22 +315,38 @@ export default function ScheduleOwnerApp({ apiBase }: ScheduleOwnerAppProps) {
   }
 
   return (
-    <section className="mt-8" aria-labelledby="schedule-owner-heading">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="schedule-kicker">My Schedule</p>
-          <h2 id="schedule-owner-heading" className="text-2xl font-bold">Owner controls</h2>
-          <p className="mt-2 max-w-2xl text-sm text-base-content/65">Plan work around class, keep task details current, and let the planner learn from your reviews.</p>
+    <section className="pb-8" aria-labelledby="schedule-owner-heading">
+      <header className="overflow-hidden rounded-2xl border border-neutral/10 bg-neutral text-neutral-content shadow-sm">
+        <div className="grid lg:grid-cols-[1fr_auto]">
+          <div className="border-l-4 border-primary px-6 py-8 sm:px-9 sm:py-10">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">AI planning studio</p>
+            <h1 id="schedule-owner-heading" className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Owner schedule</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-content/60">Plan work around class, keep task details current, and teach the planner from every outcome.</p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <a className="btn btn-primary btn-sm" href="#add-schedule-task">Add a task</a>
+              <a className="btn btn-sm border-neutral-content/20 bg-transparent text-neutral-content hover:border-neutral-content/40 hover:bg-neutral-content/10" href="/schedule/">View public schedule ↗</a>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 divide-x divide-neutral-content/10 border-t border-neutral-content/10 lg:min-w-[330px] lg:border-l lg:border-t-0">
+            <div className="flex flex-col justify-end px-4 py-6 sm:px-6">
+              <p className="text-2xl font-semibold tabular-nums">{loading ? '—' : activeTasks.length}</p>
+              <p className="mt-1 text-[0.65rem] font-medium uppercase tracking-wider text-neutral-content/45">Active</p>
+            </div>
+            <div className="flex flex-col justify-end px-4 py-6 sm:px-6">
+              <p className="text-2xl font-semibold tabular-nums">{loading ? '—' : reviews.length}</p>
+              <p className="mt-1 text-[0.65rem] font-medium uppercase tracking-wider text-neutral-content/45">Reviews</p>
+            </div>
+            <div className="flex flex-col justify-end px-4 py-6 sm:px-6">
+              <p className="text-2xl font-semibold tabular-nums">{loading ? '—' : tasks.filter((task) => task.status === 'done').length}</p>
+              <p className="mt-1 text-[0.65rem] font-medium uppercase tracking-wider text-neutral-content/45">Done</p>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <a className="btn btn-sm btn-ghost" href="/admin/">Back to dashboard</a>
-          <a className="btn btn-sm btn-soft" href="/schedule/">View public schedule</a>
-        </div>
-      </div>
+      </header>
 
       <div className="schedule-task-layout schedule-owner-layout">
         <div className="space-y-4">
-          <div className="card bg-base-100 shadow schedule-card">
+          <div id="add-schedule-task" className="card scroll-mt-24 border-l-4 border-l-primary bg-base-100 shadow-sm schedule-card">
             <div className="card-body p-4 sm:p-6">
               <p className="schedule-kicker">Owner view</p>
               <h3 className="card-title text-xl">Add a task</h3>
@@ -349,7 +365,7 @@ export default function ScheduleOwnerApp({ apiBase }: ScheduleOwnerAppProps) {
             </div>
           </div>
 
-          <div className="card bg-base-100 shadow schedule-card" aria-labelledby="task-manager-heading">
+          <div className="card bg-base-100 shadow-sm schedule-card" aria-labelledby="task-manager-heading">
             <div className="card-body p-4 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -367,7 +383,7 @@ export default function ScheduleOwnerApp({ apiBase }: ScheduleOwnerAppProps) {
         </div>
 
         <div className="space-y-4">
-          <div className="card bg-base-100 shadow schedule-card" aria-labelledby="review-heading">
+          <div className="card bg-base-100 shadow-sm schedule-card" aria-labelledby="review-heading">
             <div className="card-body p-4 sm:p-6">
               <p className="schedule-kicker">Second queue</p>
               <h3 id="review-heading" className="card-title text-xl">How did it go?</h3>
@@ -410,7 +426,7 @@ export default function ScheduleOwnerApp({ apiBase }: ScheduleOwnerAppProps) {
             </div>
           </div>
 
-          <div className="schedule-learning rounded-box p-4" aria-label="AI previous scheduling experience">
+          <div className="schedule-learning rounded-xl p-5" aria-label="AI previous scheduling experience">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="schedule-kicker">Previous experience</p>
@@ -430,8 +446,6 @@ export default function ScheduleOwnerApp({ apiBase }: ScheduleOwnerAppProps) {
           </div>
         </div>
       </div>
-
-      <p className="mt-6"><a href="/" className="link link-hover text-sm">← Back to blog</a></p>
 
       {(notice || error) && <div className={`toast toast-end toast-bottom z-50 ${error ? 'schedule-toast-error' : ''}`} role="status"><div className={`alert ${error ? 'alert-error' : 'alert-success'} shadow-lg`}><span>{error || notice}</span><button type="button" className="btn btn-xs btn-ghost" onClick={() => { setError(''); setNotice(''); }}>×</button></div></div>}
     </section>
