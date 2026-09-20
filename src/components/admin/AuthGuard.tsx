@@ -107,17 +107,23 @@ export default function AuthGuard({ children, scheduleApiBase }: { children: Rea
 
   return (
     <div>
-      <div className="flex justify-end items-center gap-3 mb-4">
-        {email && <span className="text-sm opacity-60">{email}</span>}
-        <button
-          className="btn btn-sm btn-ghost"
-          onClick={() => {
-            logout();
-            window.location.href = '/admin/';
-          }}
-        >
-          Logout
-        </button>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-base-300 pb-4">
+        <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-base-content/45">
+          <span className="h-2 w-2 rounded-full bg-success" aria-hidden="true" />
+          Secure admin session
+        </div>
+        <div className="flex items-center gap-3">
+          {email && <span className="hidden text-sm text-base-content/55 sm:inline">{email}</span>}
+          <button
+            className="btn btn-ghost btn-sm h-8 min-h-8 px-3 text-xs"
+            onClick={() => {
+              logout();
+              window.location.href = '/admin/';
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </div>
       {children}
       {scheduleApiBase && <ScheduleOwnerApp apiBase={scheduleApiBase} />}

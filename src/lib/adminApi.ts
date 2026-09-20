@@ -39,6 +39,22 @@ export async function adminFetchPostList(page = 1, page_size = 10) {
   return handle<any>(res);
 }
 
+/** 拉取完整文章列表，供后台概览使用；兼容后端没有 total 的分页响应。 */
+export async function adminFetchAllPosts(page_size = 50) {
+  const posts: any[] = [];
+  let page = 1;
+  for (let index = 0; index < 50; index += 1) {
+    const result = await adminFetchPostList(page, page_size);
+    const batch = Array.isArray(result?.data) ? result.data : [];
+    if (!batch.length) break;
+    posts.push(...batch);
+    if (batch.length < page_size) break;
+    if (result?.meta?.total_pages && page >= result.meta.total_pages) break;
+    page += 1;
+  }
+  return posts;
+}
+
 export async function adminFetchPostById(id: string) {
   const res = await fetch(`${BASE}/post/${id}`, { headers: authHeaders() });
   return handle<any>(res);
