@@ -17,6 +17,7 @@
 
 - `src/pages/`: `index`(首页), `page/[page]`, `post/[id]`, `archive`, `archive/tag/[tag]`, `archive/category/[category]`, `about`, `schedule`, `search`, `admin/**`, `rss.xml.js`, `robots.txt.ts`
 - `src/layouts/BaseLayout.astro`:全局 SEO head
+- `src/layouts/AdminLayout.astro`:后台鉴权、宽度与面包屑的统一壳层
 - `src/components/`: Navbar/Footer/Sidebar/PostCard/ArchiveTimeline + `schedule/*`/`admin/*`(React islands)
 - `src/lib/api.ts`:后端接口封装(与 `blog_back_wasm` 对齐)
 - `src/lib/markdown.ts`:构建时 markdown→HTML
@@ -26,6 +27,7 @@
 ```bash
 cp .env.example .env  # 按需改 PUBLIC_SITE_URL / PUBLIC_API_BASE
 npm install
+npm run check
 npm run dev
 ```
 

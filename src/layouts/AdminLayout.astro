@@ -1,0 +1,52 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import AuthGuard from '../components/admin/AuthGuard';
+
+interface Props {
+  pageTitle: string;
+  description: string;
+  canonicalPath: string;
+  currentLabel: string;
+  parentLabel?: string;
+  parentHref?: string;
+  width?: 'profile' | 'standard' | 'wide';
+  scheduleApiBase?: string;
+}
+
+const {
+  pageTitle,
+  description,
+  canonicalPath,
+  currentLabel,
+  parentLabel,
+  parentHref,
+  width = 'standard',
+  scheduleApiBase,
+} = Astro.props;
+
+const widthClass = {
+  profile: 'max-w-6xl',
+  standard: 'max-w-7xl',
+  wide: 'max-w-[90rem]',
+}[width];
+
+const isDashboard = canonicalPath === '/admin/';
+---
+
+<BaseLayout title={pageTitle} description={description} canonicalPath={canonicalPath} noindex={true}>
+  <div class:list={['mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-10', widthClass]}>
+    <nav class="breadcrumbs mb-4 text-xs text-base-content/50" aria-label="Breadcrumb">
+      <ol class="flex gap-2">
+        <li><a href="/" class="transition-colors hover:text-base-content">Home</a></li>
+        {!isDashboard && <li><a href="/admin/" class="transition-colors hover:text-base-content">Admin</a></li>}
+        {parentLabel && parentHref && (
+          <li><a href={parentHref} class="transition-colors hover:text-base-content">{parentLabel}</a></li>
+        )}
+        <li class="font-medium text-base-content/75" aria-current="page">{currentLabel}</li>
+      </ol>
+    </nav>
+    <AuthGuard client:only="react" scheduleApiBase={scheduleApiBase}>
+      <slot />
+    </AuthGuard>
+  </div>
+</BaseLayout>

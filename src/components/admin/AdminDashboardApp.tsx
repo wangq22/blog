@@ -5,6 +5,7 @@ import {
   adminFetchUserProfile,
 } from '../../lib/adminApi';
 import type { PostPreview, UserProfile } from '../../lib/api';
+import AdminIcon from './AdminIcon';
 
 type DashboardData = {
   posts: PostPreview[];
@@ -46,67 +47,6 @@ const actions = [
     accent: 'bg-secondary/15 text-secondary',
   },
 ] as const;
-
-function Icon({ name, className = 'h-5 w-5' }: { name: string; className?: string }) {
-  const common = {
-    className,
-    viewBox: '0 0 24 24',
-    fill: 'none',
-    stroke: 'currentColor',
-    strokeWidth: 1.8,
-    strokeLinecap: 'round' as const,
-    strokeLinejoin: 'round' as const,
-    'aria-hidden': true,
-  };
-
-  if (name === 'edit') {
-    return (
-      <svg {...common}>
-        <path d="M13.5 6.5l4 4M4 20l4.2-.9L19 6.3a2.8 2.8 0 0 0-4-4L4.9 12.4 4 20Z" />
-        <path d="M12 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-7" />
-      </svg>
-    );
-  }
-  if (name === 'stack') {
-    return (
-      <svg {...common}>
-        <path d="m12 3-9 5 9 5 9-5-9-5Z" />
-        <path d="m3 12 9 5 9-5M3 16l9 5 9-5" />
-      </svg>
-    );
-  }
-  if (name === 'calendar') {
-    return (
-      <svg {...common}>
-        <rect x="3" y="5" width="18" height="16" rx="2" />
-        <path d="M16 3v4M8 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" />
-      </svg>
-    );
-  }
-  if (name === 'user') {
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 21a8 8 0 0 1 16 0" />
-      </svg>
-    );
-  }
-  if (name === 'arrow') {
-    return (
-      <svg {...common}>
-        <path d="M5 12h14M13 6l6 6-6 6" />
-      </svg>
-    );
-  }
-  if (name === 'external') {
-    return (
-      <svg {...common}>
-        <path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-      </svg>
-    );
-  }
-  return null;
-}
 
 function formatDate(value?: string, compact = false) {
   if (!value) return '—';
@@ -196,12 +136,12 @@ export default function AdminDashboardApp() {
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <a href="/admin/edit/" className="btn btn-primary border-0 shadow-none">
-                <Icon name="edit" />
+                <AdminIcon name="edit" />
                 Start writing
               </a>
               <a href="/" className="btn border-neutral-content/20 bg-transparent text-neutral-content hover:border-neutral-content/40 hover:bg-neutral-content/10">
                 View live blog
-                <Icon name="external" className="h-4 w-4" />
+                <AdminIcon name="external" className="h-4 w-4" />
               </a>
             </div>
           </div>
@@ -237,7 +177,7 @@ export default function AdminDashboardApp() {
             <h2 id="overview-heading" className="mt-1 text-2xl font-semibold tracking-tight">Content overview</h2>
           </div>
           <a href="/admin/posts/" className="hidden items-center gap-2 text-sm font-medium text-base-content/60 transition-colors hover:text-primary sm:flex">
-            Full library <Icon name="arrow" className="h-4 w-4" />
+            Full library <AdminIcon name="arrow-right" className="h-4 w-4" />
           </a>
         </div>
 
@@ -300,7 +240,7 @@ export default function AdminDashboardApp() {
                           <span className="hidden text-xs text-base-content/40 sm:inline">{post.read_time} min read</span>
                         )}
                         <span className="flex h-8 w-8 items-center justify-center rounded-lg text-base-content/35 transition-colors group-hover:bg-primary group-hover:text-primary-content">
-                          <Icon name="arrow" className="h-4 w-4" />
+                          <AdminIcon name="arrow-right" className="h-4 w-4" />
                         </span>
                       </div>
                     </a>
@@ -333,7 +273,7 @@ export default function AdminDashboardApp() {
                 className="group flex items-center gap-4 rounded-xl border border-base-300 bg-base-100 px-4 py-4 transition-[border-color,transform,box-shadow] hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${action.accent}`}>
-                  <Icon name={action.icon} />
+                  <AdminIcon name={action.icon} />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block font-medium">{action.title}</span>

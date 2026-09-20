@@ -1,5 +1,5 @@
 import MDEditor from '@uiw/react-md-editor';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import {
   adminDeleteMedia,
   adminFetchCategories,
@@ -102,7 +102,7 @@ export default function PostEditApp() {
     return { words, readTime: words ? Math.max(1, Math.ceil(words / 200)) : 0 };
   }, [post?.content]);
 
-  const addTag = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const addTag = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key !== 'Enter') return;
     const tag = tagInput.trim();
     if (!tag) return;

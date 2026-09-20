@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import {
   adminFetchUserProfile,
   adminUpdateUserProfile,
@@ -33,7 +33,7 @@ function toForm(profile: UserProfile): ProfileForm {
   };
 }
 
-function FieldLabel({ children, optional = false }: { children: React.ReactNode; optional?: boolean }) {
+function FieldLabel({ children, optional = false }: { children: ReactNode; optional?: boolean }) {
   return (
     <span className="mb-2 flex items-center justify-between text-sm font-medium">
       <span>{children}</span>

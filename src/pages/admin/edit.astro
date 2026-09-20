@@ -1,23 +1,18 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import AuthGuard from '../../components/admin/AuthGuard';
+import AdminLayout from '../../layouts/AdminLayout.astro';
 import PostEditApp from '../../components/admin/PostEditApp';
 
 export const prerender = true;
 ---
 
-<BaseLayout title="Edit Post" description="Create or edit a blog post." canonicalPath="/admin/edit/" noindex={true}>
-  <div class="mx-auto max-w-[90rem] px-4 py-6 sm:px-8 sm:py-8 lg:px-10">
-    <nav class="breadcrumbs mb-4 text-xs text-base-content/50" aria-label="Breadcrumb">
-      <ol class="flex gap-2">
-        <li><a href="/" class="transition-colors hover:text-base-content">Home</a></li>
-        <li><a href="/admin/" class="transition-colors hover:text-base-content">Admin</a></li>
-        <li><a href="/admin/posts/" class="transition-colors hover:text-base-content">Posts</a></li>
-        <li class="font-medium text-base-content/75" aria-current="page">Edit</li>
-      </ol>
-    </nav>
-    <AuthGuard client:only="react">
-      <PostEditApp client:only="react" />
-    </AuthGuard>
-  </div>
-</BaseLayout>
+<AdminLayout
+  pageTitle="Edit Post"
+  description="Create or edit a blog post."
+  canonicalPath="/admin/edit/"
+  currentLabel="Edit"
+  parentLabel="Posts"
+  parentHref="/admin/posts/"
+  width="wide"
+>
+  <PostEditApp client:only="react" />
+</AdminLayout>

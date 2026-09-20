@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "check": "tsc --noEmit",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -13,8 +14,6 @@
     "@astrojs/react": "^6.0.5",
     "@astrojs/sitemap": "^3.7.4",
     "@tailwindcss/vite": "^4.3.3",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
     "@uiw/react-md-editor": "^4.1.2",
     "astro": "^7.3.2",
     "daisyui": "^5.7.37",
@@ -22,10 +21,11 @@
     "marked": "^18.0.12",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "react-hot-toast": "^2.6.0",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "typescript": "^7.0.2"
   }
 }

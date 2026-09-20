@@ -14,7 +14,7 @@ import ScheduleOwnerApp from '../schedule/ScheduleOwnerApp';
  * client:only 使用,不参与 SSG,不影响 SEO。
  * token 存 localStorage 'token'(= Access id_token),adminApi.ts 直接沿用。
  */
-export default function AuthGuard({ children, scheduleApiBase }: { children: ReactNode; scheduleApiBase?: string }) {
+export default function AuthGuard({ children, scheduleApiBase }: { children?: ReactNode; scheduleApiBase?: string }) {
   const [status, setStatus] = useState<'loading' | 'authed' | 'unauthed' | 'misconfig'>('loading');
   const [email, setEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

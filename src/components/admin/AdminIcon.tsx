@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 export type AdminIconName =
   | 'arrow-left'
   | 'arrow-right'
@@ -13,6 +15,7 @@ export type AdminIconName =
   | 'plus'
   | 'search'
   | 'sparkles'
+  | 'stack'
   | 'trash'
   | 'upload'
   | 'user';
@@ -35,7 +38,7 @@ export default function AdminIcon({
     'aria-hidden': true,
   };
 
-  const paths: Record<AdminIconName, React.ReactNode> = {
+  const paths: Record<AdminIconName, ReactNode> = {
     'arrow-left': <path d="M19 12H5m6 6-6-6 6-6" />,
     'arrow-right': <path d="M5 12h14m-6-6 6 6-6 6" />,
     calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
@@ -50,6 +53,7 @@ export default function AdminIcon({
     plus: <path d="M12 5v14M5 12h14" />,
     search: <><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></>,
     sparkles: <><path d="m12 3 1.1 3.3L16 8l-2.9 1.7L12 13l-1.1-3.3L8 8l2.9-1.7L12 3Z" /><path d="m19 14 .7 2.3L22 17.5l-2.3 1.2L19 21l-.7-2.3-2.3-1.2 2.3-1.2L19 14ZM5 12l.8 2.5L8 16l-2.2 1.5L5 20l-.8-2.5L2 16l2.2-1.5L5 12Z" /></>,
+    stack: <><path d="m12 3-9 5 9 5 9-5-9-5Z" /><path d="m3 12 9 5 9-5M3 16l9 5 9-5" /></>,
     trash: <><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6" /></>,
     upload: <><path d="M12 16V4m-4 4 4-4 4 4" /><path d="M4 15v5h16v-5" /></>,
     user: <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>,
