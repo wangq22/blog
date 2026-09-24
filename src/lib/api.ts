@@ -35,6 +35,10 @@ export interface UserProfile {
   name: string;
   bio: string;
   avatar_url: string;
+  /** R2-backed avatar used for the default serious profile mode. */
+  serious_avatar_url?: string | null;
+  /** Optional bio shown when a visitor switches to casual mode. */
+  casual_bio?: string | null;
   github_url?: string;
   bilibili_url?: string;
   /** IANA 时区,如 Asia/Shanghai(后端 0004 migration 新增,老数据为 null) */
@@ -125,6 +129,8 @@ export async function fetchUserProfile(): Promise<UserProfile> {
       name: "Charlie Wang's Blog",
       bio: '',
       avatar_url: '/icon-512.png',
+      serious_avatar_url: '',
+      casual_bio: '',
       timezone: '',
       city: '',
       email: '',
@@ -219,6 +225,16 @@ export function mediaUrl(key: string): string {
   if (!k) return '';
   const clean = k.replace(/^\/+/, '').replace(/^api\/media\//, '');
   return `${apiBase()}/media/${clean}`;
+}
+
+/** Resolve an avatar URL or an R2 media key (`covers/...`) for display. */
+export function resolveProfileImage(value: string | null | undefined, fallback = '/icon-512.png'): string {
+  const image = String(value || '').trim();
+  if (!image) return fallback;
+  if (/^(https?:|data:|blob:)/i.test(image)) return image;
+  if (image.startsWith('/api/media/')) return mediaUrl(image);
+  if (/^(covers|posts)\//.test(image)) return mediaUrl(image);
+  return image;
 }
 
 /** 封面:有 cover_key 拼代理地址,无则空(无封面) */

@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Sidebar from '../components/Sidebar.astro';
 import ProfileDetails from '../components/ProfileDetails.astro';
-import { fetchUserProfile, fetchCategories, fetchTags } from '../lib/api';
+import { absoluteUrl, fetchUserProfile, fetchCategories, fetchTags, resolveProfileImage } from '../lib/api';
 
 export const prerender = true;
 
@@ -16,12 +16,16 @@ const aboutDescription =
   `About ${user.name}${user.bio ? ` — ${user.bio}` : ''}` +
   `${user.affiliation ? ` | ${user.affiliation}` : ''}` +
   `${user.city ? ` | ${user.city}` : ''}.`;
+const seriousAvatar = resolveProfileImage(user.serious_avatar_url);
+const casualAvatar = resolveProfileImage(user.avatar_url);
+const casualBio = user.casual_bio?.trim() || user.bio;
 ---
 
 <BaseLayout
   title="About Me"
   description={aboutDescription}
   canonicalPath="/about/"
+  ogImage={seriousAvatar}
   extraJsonLd={{
     '@context': 'https://schema.org',
     '@type': 'ProfilePage',
@@ -29,8 +33,8 @@ const aboutDescription =
       '@type': 'Person',
       name: user.name,
       description: aboutDescription,
-      image: user.avatar_url,
-      sameAs: [user.github_url, user.bilibili_url].filter(Boolean),
+      image: absoluteUrl(seriousAvatar),
+      sameAs: [user.github_url].filter(Boolean),
       ...(user.email ? { email: `mailto:${user.email}` } : {}),
       ...(user.city ? { address: { '@type': 'PostalAddress', addressLocality: user.city } } : {}),
       ...(user.affiliation
@@ -47,28 +51,39 @@ const aboutDescription =
           <h1 class="card-title text-2xl mb-4">About Me</h1>
           <div class="flex flex-col sm:flex-row gap-6 items-start">
             <img
-              src={user.avatar_url || '/icon-512.png'}
+              src={seriousAvatar}
               alt={`${user.name} avatar`}
               width="160"
               height="160"
               loading="lazy"
               decoding="async"
-              class="rounded-xl w-40 h-40 object-cover"
+              class="profile-serious-only rounded-xl w-40 h-40 object-cover"
+            />
+            <img
+              src={casualAvatar}
+              alt={`${user.name} avatar`}
+              width="160"
+              height="160"
+              loading="lazy"
+              decoding="async"
+              class="profile-casual-only rounded-xl w-40 h-40 object-cover"
             />
             <div class="space-y-3">
               <h2 class="text-xl font-semibold">{user.name}</h2>
               {user.bio ? (
-                <p class="leading-relaxed opacity-90">{user.bio}</p>
+                <p class="profile-serious-only leading-relaxed opacity-90">{user.bio}</p>
               ) : (
-                <p class="opacity-60">Nothing here yet — check back soon.</p>
+                <p class="profile-serious-only opacity-60">Nothing here yet — check back soon.</p>
               )}
+              {casualBio && <p class="profile-casual-only leading-relaxed opacity-90">{casualBio}</p>}
+              {!casualBio && <p class="profile-casual-only opacity-60">Nothing here yet — check back soon.</p>}
               <ProfileDetails user={user} />
               <div class="flex gap-2">
                 {user.github_url && (
                   <a href={user.github_url} target="_blank" rel="noopener noreferrer me" class="btn btn-sm btn-soft">GitHub</a>
                 )}
                 {user.bilibili_url && (
-                  <a href={user.bilibili_url} target="_blank" rel="noopener noreferrer me" class="btn btn-sm btn-soft btn-info">Bilibili</a>
+                  <a href={user.bilibili_url} target="_blank" rel="noopener noreferrer me" class="profile-casual-only btn btn-sm btn-soft btn-info">Bilibili</a>
                 )}
               </div>
             </div>

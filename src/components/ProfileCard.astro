@@ -1,32 +1,45 @@
 ---
-import type { UserProfile } from '../lib/api';
+import { resolveProfileImage, type UserProfile } from '../lib/api';
 import ProfileDetails from './ProfileDetails.astro';
 
 export interface Props {
   user: UserProfile;
 }
 const { user } = Astro.props;
+const seriousAvatar = resolveProfileImage(user.serious_avatar_url);
+const casualAvatar = resolveProfileImage(user.avatar_url);
+const casualBio = user.casual_bio?.trim() || user.bio;
 ---
 
 <aside class="card bg-base-100 shadow w-full" aria-label="Author profile">
   <figure class="px-5 pt-5">
     <img
-      src={user.avatar_url || '/icon-512.png'}
+      src={seriousAvatar}
       alt={`${user.name} avatar`}
       width="400"
       height="400"
       loading="lazy"
       decoding="async"
-      class="rounded-xl aspect-square object-cover w-full"
+      class="profile-serious-only rounded-xl aspect-square object-cover w-full"
+    />
+    <img
+      src={casualAvatar}
+      alt={`${user.name} avatar`}
+      width="400"
+      height="400"
+      loading="lazy"
+      decoding="async"
+      class="profile-casual-only rounded-xl aspect-square object-cover w-full"
     />
   </figure>
   <div class="card-body">
     <h2 class="card-title">{user.name}</h2>
-    {user.bio && <p class="text-sm opacity-80">{user.bio}</p>}
+    {user.bio && <p class="profile-serious-only text-sm opacity-80">{user.bio}</p>}
+    {casualBio && <p class="profile-casual-only text-sm opacity-80">{casualBio}</p>}
     <ProfileDetails user={user} />
     <div class="card-actions items-center mt-2">
       {user.bilibili_url && (
-        <a class="btn btn-soft btn-info btn-sm" href={user.bilibili_url} target="_blank" rel="noopener noreferrer me" aria-label="bilibili">
+        <a class="profile-casual-only btn btn-soft btn-info btn-sm" href={user.bilibili_url} target="_blank" rel="noopener noreferrer me" aria-label="bilibili">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="m17 2-5 5-5-5"/></svg>
           Bilibili
         </a>

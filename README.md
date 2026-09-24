@@ -68,7 +68,14 @@ cd ../blog_back_wasm
 npx wrangler d1 execute blog --remote --file=./migrations/0004_user_profile_extend.sql
 ```
 
-登录后台后打开 `/admin/profile/` 填写资料；保存后会触发 Pages 重建，资料会显示在侧栏和 About 页面。
+严肃模式增加的 `serious_avatar_url` 和轻松模式简介 `casual_bio` 也需要执行迁移:
+
+```bash
+cd ../blog_back_wasm
+npx wrangler d1 execute blog --remote --file=./migrations/0008_profile_modes.sql
+```
+
+登录后台后打开 `/admin/profile/` 填写两种模式的资料。`Serious mode photo` 可以填写 R2 Worker media URL 或 `covers/...` key；保存后会触发 Pages 重建。新访客默认进入严肃模式，个人偏好保存在浏览器本地。
 
 ## 环境变量
 

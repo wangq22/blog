@@ -57,7 +57,7 @@ const jsonLd = [websiteLd, ...extras];
 ---
 
 <!doctype html>
-<html lang="en" data-theme="cupcake">
+<html lang="en" data-theme="cupcake" data-profile-mode="serious">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -103,6 +103,15 @@ const jsonLd = [websiteLd, ...extras];
               ? 'dark'
               : 'cupcake';
         document.documentElement.setAttribute('data-theme', theme);
+      } catch {}
+    </script>
+
+    <!-- Profile mode defaults to serious for first-time visitors. -->
+    <script is:inline>
+      try {
+        if (localStorage.getItem('profile-mode') === 'casual') {
+          document.documentElement.setAttribute('data-profile-mode', 'casual');
+        }
       } catch {}
     </script>
 

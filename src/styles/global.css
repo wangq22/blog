@@ -17,6 +17,12 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Profile content starts in serious mode and switches from the navbar. */
+html[data-profile-mode="serious"] .profile-casual-only,
+html[data-profile-mode="casual"] .profile-serious-only {
+  display: none !important;
+}
+
 /* markdown 正文(服务端渲染后的 HTML) */
 .markdown-body {
   background: transparent !important;

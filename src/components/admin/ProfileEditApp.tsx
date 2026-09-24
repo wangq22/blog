@@ -4,13 +4,15 @@ import {
   adminUpdateUserProfile,
   type UserProfileUpdate,
 } from '../../lib/adminApi';
-import type { UserProfile } from '../../lib/api';
+import { resolveProfileImage, type UserProfile } from '../../lib/api';
 import AdminIcon from './AdminIcon';
 
 interface ProfileForm {
   name: string;
   bio: string;
   avatar_url: string;
+  serious_avatar_url: string;
+  casual_bio: string;
   github_url: string;
   bilibili_url: string;
   timezone: string;
@@ -24,6 +26,8 @@ function toForm(profile: UserProfile): ProfileForm {
     name: profile.name ?? '',
     bio: profile.bio ?? '',
     avatar_url: profile.avatar_url ?? '',
+    serious_avatar_url: profile.serious_avatar_url ?? '',
+    casual_bio: profile.casual_bio ?? '',
     github_url: profile.github_url ?? '',
     bilibili_url: profile.bilibili_url ?? '',
     timezone: profile.timezone ?? '',
@@ -49,6 +53,7 @@ export default function ProfileEditApp() {
   const [error, setError] = useState('');
   const [note, setNote] = useState('');
   const [avatarError, setAvatarError] = useState(false);
+  const [previewMode, setPreviewMode] = useState<'serious' | 'casual'>('serious');
 
   useEffect(() => {
     adminFetchUserProfile()
@@ -59,7 +64,7 @@ export default function ProfileEditApp() {
 
   const setField = (field: keyof ProfileForm, value: string) => {
     setProfile((current) => (current ? { ...current, [field]: value } : current));
-    if (field === 'avatar_url') setAvatarError(false);
+    if (field === 'avatar_url' || field === 'serious_avatar_url') setAvatarError(false);
     setError('');
     setNote('');
   };
@@ -124,6 +129,13 @@ export default function ProfileEditApp() {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join('') || 'CC';
+  const previewAvatar = resolveProfileImage(
+    previewMode === 'serious' ? profile.serious_avatar_url : profile.avatar_url,
+    '',
+  );
+  const previewBio = previewMode === 'serious'
+    ? profile.bio
+    : profile.casual_bio || profile.bio;
 
   return (
     <div className="pb-8">
@@ -167,9 +179,14 @@ export default function ProfileEditApp() {
                 <input className="input input-bordered w-full" value={profile.affiliation} onChange={(event) => setField('affiliation', event.target.value)} placeholder="Company, university, or organization" />
               </label>
               <label className="block sm:col-span-2">
-                <FieldLabel>Bio / Description</FieldLabel>
+                <FieldLabel>Serious mode bio / Description</FieldLabel>
                 <textarea className="textarea textarea-bordered min-h-36 w-full leading-relaxed" value={profile.bio} onChange={(event) => setField('bio', event.target.value)} placeholder="A short introduction" maxLength={500} />
                 <span className="mt-1.5 block text-right text-xs tabular-nums text-base-content/35">{profile.bio.length}/500</span>
+              </label>
+              <label className="block sm:col-span-2">
+                <FieldLabel optional>Casual mode bio</FieldLabel>
+                <textarea className="textarea textarea-bordered min-h-28 w-full leading-relaxed" value={profile.casual_bio} onChange={(event) => setField('casual_bio', event.target.value)} placeholder="A more personal introduction for casual mode" maxLength={500} />
+                <span className="mt-1.5 block text-right text-xs tabular-nums text-base-content/35">{profile.casual_bio.length}/500</span>
               </label>
             </div>
           </section>
@@ -195,7 +212,12 @@ export default function ProfileEditApp() {
                 <span id="timezone-help" className="mt-1.5 block text-xs text-base-content/40">Use an IANA timezone value.</span>
               </label>
               <label className="block sm:col-span-2">
-                <FieldLabel optional>Avatar URL</FieldLabel>
+                <FieldLabel optional>Serious mode photo (R2 URL or key)</FieldLabel>
+                <input className="input input-bordered w-full" value={profile.serious_avatar_url} onChange={(event) => setField('serious_avatar_url', event.target.value)} placeholder="https://…/api/media/covers/photo.jpg or covers/photo.jpg" aria-describedby="serious-avatar-help" />
+                <span id="serious-avatar-help" className="mt-1.5 block text-xs leading-5 text-base-content/40">For an R2 image, paste its Worker media URL or key such as covers/your-photo.jpg.</span>
+              </label>
+              <label className="block sm:col-span-2">
+                <FieldLabel optional>Casual mode avatar URL</FieldLabel>
                 <input className="input input-bordered w-full" type="url" value={profile.avatar_url} onChange={(event) => setField('avatar_url', event.target.value)} placeholder="https://…" />
               </label>
               <label className="block">
@@ -227,17 +249,22 @@ export default function ProfileEditApp() {
 
         <aside className="lg:sticky lg:top-24" aria-label="Live profile preview">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-base-content/40">Live preview</p>
+          <div className="join mb-3 w-full" role="group" aria-label="Preview profile mode">
+            <button type="button" className={`btn btn-sm join-item flex-1 ${previewMode === 'serious' ? 'btn-primary' : 'btn-ghost'}`} aria-pressed={previewMode === 'serious'} onClick={() => { setPreviewMode('serious'); setAvatarError(false); }}>Serious</button>
+            <button type="button" className={`btn btn-sm join-item flex-1 ${previewMode === 'casual' ? 'btn-primary' : 'btn-ghost'}`} aria-pressed={previewMode === 'casual'} onClick={() => { setPreviewMode('casual'); setAvatarError(false); }}>Casual</button>
+          </div>
           <div className="overflow-hidden rounded-2xl border border-neutral/10 bg-neutral text-neutral-content shadow-sm">
             <div className="h-1 bg-primary" />
             <div className="p-6">
               <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border border-neutral-content/10 bg-neutral-content/10 text-xl font-semibold">
-                {profile.avatar_url && !avatarError ? (
-                  <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" onError={() => setAvatarError(true)} />
+                {previewAvatar && !avatarError ? (
+                  <img src={previewAvatar} alt="" className="h-full w-full object-cover" onError={() => setAvatarError(true)} />
                 ) : initials}
               </div>
               <h2 className="mt-5 text-2xl font-semibold tracking-tight">{profile.name || 'Your name'}</h2>
               {profile.affiliation && <p className="mt-1 text-sm text-neutral-content/50">{profile.affiliation}</p>}
-              <p className="mt-4 text-sm leading-6 text-neutral-content/65">{profile.bio || 'Your short introduction will appear here.'}</p>
+              <p className="mt-4 text-sm leading-6 text-neutral-content/65">{previewBio || 'Your short introduction will appear here.'}</p>
+              {previewMode === 'casual' && profile.bilibili_url && <a href={profile.bilibili_url} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-info btn-soft mt-3">Bilibili</a>}
               {(profile.city || profile.timezone) && (
                 <div className="mt-5 border-t border-neutral-content/10 pt-4 text-xs text-neutral-content/50">
                   {profile.city && <p className="flex items-center gap-2"><AdminIcon name="location" className="h-3.5 w-3.5" />{profile.city}</p>}

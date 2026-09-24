@@ -96,6 +96,8 @@ export interface UserProfileUpdate {
   name?: string;
   bio?: string;
   avatar_url?: string;
+  serious_avatar_url?: string;
+  casual_bio?: string;
   github_url?: string;
   bilibili_url?: string;
   timezone?: string;
